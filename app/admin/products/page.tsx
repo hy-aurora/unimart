@@ -159,16 +159,16 @@ export default function ProductsPage() {
   return (
     <AdminLayout>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h2 className="text-3xl font-bold tracking-tight">Products</h2>
           <Dialog>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Product
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Product</DialogTitle>
                 <DialogDescription>
@@ -176,52 +176,52 @@ export default function ProductsPage() {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-name" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                  <Label htmlFor="product-name" className="sm:text-right">
                     Name
                   </Label>
-                  <Input id="product-name" className="col-span-3" placeholder="Product name" />
+                  <Input id="product-name" className="col-span-1 sm:col-span-3" placeholder="Product name" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-category" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                  <Label htmlFor="product-category" className="sm:text-right">
                     Category
                   </Label>
-                  <Input id="product-category" className="col-span-3" placeholder="Category" />
+                  <Input id="product-category" className="col-span-1 sm:col-span-3" placeholder="Category" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-price" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                  <Label htmlFor="product-price" className="sm:text-right">
                     Price (£)
                   </Label>
-                  <Input id="product-price" type="number" className="col-span-3" placeholder="0.00" />
+                  <Input id="product-price" type="number" className="col-span-1 sm:col-span-3" placeholder="0.00" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-stock" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                  <Label htmlFor="product-stock" className="sm:text-right">
                     Stock
                   </Label>
-                  <Input id="product-stock" type="number" className="col-span-3" placeholder="0" />
+                  <Input id="product-stock" type="number" className="col-span-1 sm:col-span-3" placeholder="0" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-description" className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                  <Label htmlFor="product-description" className="sm:text-right pt-2">
                     Description
                   </Label>
                   <textarea 
                     id="product-description" 
-                    className="col-span-3 min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="col-span-1 sm:col-span-3 min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
                     placeholder="Product description"
                   ></textarea>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <div className="text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                  <div className="sm:text-right">
                     <Label>Status</Label>
                   </div>
-                  <div className="col-span-3 flex items-center space-x-2">
+                  <div className="col-span-1 sm:col-span-3 flex items-center space-x-2">
                     <Checkbox id="product-active" defaultChecked />
                     <Label htmlFor="product-active">Active</Label>
                   </div>
                 </div>
               </div>
-              <DialogFooter>
-                <Button type="submit">Save Product</Button>
+              <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                <Button type="submit" className="w-full sm:w-auto">Save Product</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -248,10 +248,10 @@ export default function ProductsPage() {
                     <Search className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline">
+                      <Button variant="outline" className="w-full sm:w-auto">
                         <Filter className="mr-2 h-4 w-4" />
                         Filter
                       </Button>
@@ -276,24 +276,24 @@ export default function ProductsPage() {
                       <DropdownMenuItem>Out of Stock</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button variant="outline">
+                  <Button variant="outline" className="w-full sm:w-auto">
                     <ArrowUpDown className="mr-2 h-4 w-4" />
                     Sort
                   </Button>
                 </div>
               </div>
 
-              <div className="rounded-md border">
+              <div className="rounded-md border overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Product ID</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Stock</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="whitespace-nowrap">Product ID</TableHead>
+                      <TableHead className="whitespace-nowrap">Name</TableHead>
+                      <TableHead className="whitespace-nowrap">Category</TableHead>
+                      <TableHead className="whitespace-nowrap">Price</TableHead>
+                      <TableHead className="whitespace-nowrap">Stock</TableHead>
+                      <TableHead className="whitespace-nowrap">Status</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -346,11 +346,11 @@ export default function ProductsPage() {
                 </Table>
               </div>
               
-              <div className="flex items-center justify-end space-x-2 py-4">
-                <Button variant="outline" size="sm">
+              <div className="flex flex-col sm:flex-row items-center justify-end space-x-0 sm:space-x-2 space-y-2 sm:space-y-0 py-4">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   Previous
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                   Next
                 </Button>
               </div>
