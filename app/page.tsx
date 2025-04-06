@@ -431,7 +431,7 @@ export default function Home() {
                   Find Your School <ArrowRight className="ml-1 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-indigo-800 px-8 py-6 text-lg">
+              <Button asChild size="lg" variant="outline" className="bg-transparent px-8 py-6 text-lg">
                 <Link href="/catalog" className="flex items-center gap-2">
                   <ShoppingBag className="h-5 w-5" /> Browse Catalog
                 </Link>
