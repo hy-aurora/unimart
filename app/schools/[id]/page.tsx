@@ -13,8 +13,8 @@ export default function SchoolPage({ params }: { params: { id: string } }) {
   const school = {
     id: schoolId,
     name: `School ${schoolId}`,
-    logo: `/placeholder.svg?height=100&width=100&text=School+${schoolId}`,
-    banner: `/placeholder.svg?height=300&width=1200&text=School+${schoolId}+Banner`,
+    logo: `/images/placeholder.webp`,
+    banner: `/images/placeholder.webp`,
     description:
       "This is a description of the school and its uniform requirements. The school has specific guidelines for uniforms that all students must follow.",
   }

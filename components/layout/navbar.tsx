@@ -18,7 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-export function Header() {
+export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   // Mock counts

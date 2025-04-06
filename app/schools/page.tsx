@@ -11,7 +11,7 @@ export default function SchoolsPage() {
     id: i + 1,
     name: `School ${i + 1}`,
     location: `City ${(i % 5) + 1}`,
-    image: `/placeholder.svg?height=200&width=200&text=School+${i + 1}`,
+    image: `/images/placeholder.webp+${i + 1}`,
   }))
 
   return (

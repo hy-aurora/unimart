@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Share2, Star } from "lucide-react"
@@ -19,10 +20,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     description:
       "Official school blazer with embroidered logo. Made from high-quality polyester blend for durability and comfort. Features two front pockets and a breast pocket.",
     images: [
-      `/placeholder.svg?height=600&width=600&text=Product+${productId}+Image+1`,
-      `/placeholder.svg?height=600&width=600&text=Product+${productId}+Image+2`,
-      `/placeholder.svg?height=600&width=600&text=Product+${productId}+Image+3`,
-      `/placeholder.svg?height=600&width=600&text=Product+${productId}+Image+4`,
+      `/images/placeholder.webp`,
+      `/images/placeholder.webp`, `/images/placeholder.webp`, `/images/placeholder.webp`,
     ],
     sizes: ["XS", "S", "M", "L", "XL"],
     colors: ["Navy", "Black"],
@@ -37,7 +36,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     id: i + 1,
     name: ["White Shirt", "Navy Trousers", "School Tie", "School Jumper"][i],
     price: Math.floor(Math.random() * 30) + 10,
-    image: `/placeholder.svg?height=300&width=300&text=Related+${i + 1}`,
+    image: `/images/placeholder.webp`,
   }))
 
   return (
@@ -77,9 +76,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-4 w-4 ${
-                      i < Math.floor(product.rating) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"
-                    }`}
+                    className={`h-4 w-4 ${i < Math.floor(product.rating) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"
+                      }`}
                   />
                 ))}
               </div>
@@ -165,11 +163,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(product.rating)
+                        className={`h-4 w-4 ${i < Math.floor(product.rating)
                             ? "fill-amber-400 text-amber-400"
                             : "fill-gray-200 text-gray-200"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -192,9 +189,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   {Array.from({ length: 5 }).map((_, j) => (
                     <Star
                       key={j}
-                      className={`h-4 w-4 ${
-                        j < 4 + (i % 2) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"
-                      }`}
+                      className={`h-4 w-4 ${j < 4 + (i % 2) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"
+                        }`}
                     />
                   ))}
                 </div>

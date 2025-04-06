@@ -35,7 +35,7 @@ export default function AboutPage() {
         </div>
         <div className="relative aspect-square">
           <Image
-            src="/placeholder.svg?height=600&width=600&text=About+Us"
+            src="/images/placeholder.webp"
             alt="About UniMart"
             fill
             className="object-cover rounded-lg"

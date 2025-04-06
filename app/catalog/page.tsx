@@ -54,7 +54,7 @@ export default function CatalogPage() {
       "School Water Bottle",
     ][i],
     price: Math.floor(Math.random() * 40) + 5,
-    image: `/placeholder.svg?height=300&width=300&text=Product+${i + 1}`,
+    image: `/images/placeholder.webp`,
     category: categories[Math.floor(Math.random() * (categories.length - 1)) + 1].name,
     badge: i % 5 === 0 ? "Sale" : i % 7 === 0 ? "New" : null,
   }))

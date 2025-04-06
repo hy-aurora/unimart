@@ -21,7 +21,7 @@ export default function CartPage() {
       size: "M",
       color: "Navy",
       class: "Year 7",
-      image: "/placeholder.svg?height=200&width=200&text=Blazer",
+      image: "/images/placeholder.webp",
       customMeasurements: null,
     },
     {
@@ -32,7 +32,7 @@ export default function CartPage() {
       size: "L",
       color: "White",
       class: "Year 7",
-      image: "/placeholder.svg?height=200&width=200&text=Shirt",
+      image: "/images/placeholder.webp",
       customMeasurements: null,
     },
     {
@@ -43,7 +43,7 @@ export default function CartPage() {
       size: "One Size",
       color: "Striped",
       class: "Year 7",
-      image: "/placeholder.svg?height=200&width=200&text=Tie",
+      image: "/images/placeholder.webp",
       customMeasurements: null,
     },
   ])
@@ -95,7 +95,7 @@ export default function CartPage() {
                     <div className="col-span-6">
                       <div className="flex items-center">
                         <div className="relative w-16 h-16 rounded overflow-hidden mr-4">
-                          <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                          <Image src={item.image || "/images/placeholder.webp"} alt={item.name} fill className="object-cover" />
                         </div>
                         <div>
                           <h3 className="font-medium text-indigo-900 dark:text-indigo-300">{item.name}</h3>
