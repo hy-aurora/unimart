@@ -1,4 +1,4 @@
-import { Truck, Package, RefreshCw, Clock } from "lucide-react"
+import { Truck, Package, RefreshCw, Clock, Phone, Mail } from "lucide-react"
 
 export default function ShippingPage() {
   return (

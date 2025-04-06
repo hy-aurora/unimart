@@ -46,7 +46,7 @@ export function ProfileWishlist() {
     },
   ])
 
-  const removeFromWishlist = (id) => {
+  const removeFromWishlist = (id: number) => {
     setWishlistItems(wishlistItems.filter((item) => item.id !== id))
   }
 

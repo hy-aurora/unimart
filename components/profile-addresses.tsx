@@ -45,23 +45,39 @@ export function ProfileAddresses() {
   ])
 
   const [isAddingAddress, setIsAddingAddress] = useState(false)
-  const [editingAddress, setEditingAddress] = useState(null)
+  const [editingAddress, setEditingAddress] = useState<{
+    id: number;
+    name: string;
+    line1: string;
+    line2: string;
+    city: string;
+    postalCode: string;
+    country: string;
+    isDefault: boolean;
+    type: string;
+  } | null>(null)
 
-  const handleAddAddress = (newAddress) => {
+  const handleAddAddress = (newAddress: { id: number; name: string; line1: string; line2: string; city: string; postalCode: string; country: string; isDefault: boolean; type: string }) => {
     setAddresses([...addresses, { ...newAddress, id: addresses.length + 1 }])
     setIsAddingAddress(false)
   }
 
-  const handleEditAddress = (updatedAddress) => {
-    setAddresses(addresses.map((addr) => (addr.id === updatedAddress.id ? updatedAddress : addr)))
+  const handleEditAddress = (updatedAddress: { id: number }) => {
+    setAddresses(
+      addresses.map((addr) =>
+        addr.id === updatedAddress.id
+          ? { ...addr, ...updatedAddress }
+          : addr
+      )
+    )
     setEditingAddress(null)
   }
 
-  const handleDeleteAddress = (id) => {
+  const handleDeleteAddress = (id: number) => {
     setAddresses(addresses.filter((addr) => addr.id !== id))
   }
 
-  const handleSetDefault = (id) => {
+  const handleSetDefault = (id: number) => {
     setAddresses(
       addresses.map((addr) => ({
         ...addr,
@@ -179,7 +195,7 @@ export function ProfileAddresses() {
   )
 }
 
-function AddressDialog({ isOpen, onClose, onSave, title, address = null }) {
+function AddressDialog({ isOpen, onClose, onSave, title, address }: { isOpen: boolean; onClose: () => void; onSave: (data: any) => void; title: string; address?: { id: number; name: string; line1: string; line2: string; city: string; postalCode: string; country: string; isDefault: boolean; type: string } | null }) {
   const [formData, setFormData] = useState(
     address || {
       name: "",
@@ -193,12 +209,12 @@ function AddressDialog({ isOpen, onClose, onSave, title, address = null }) {
     },
   )
 
-  const handleChange = (e) => {
+  const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault()
     onSave(formData)
   }
@@ -277,7 +293,7 @@ function AddressDialog({ isOpen, onClose, onSave, title, address = null }) {
                 <Checkbox
                   id="isDefault"
                   checked={formData.isDefault}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isDefault: checked })}
+                  onCheckedChange={(checked) => setFormData({ ...formData, isDefault: !!checked })}
                 />
                 <span>Set as Default Address</span>
               </Label>

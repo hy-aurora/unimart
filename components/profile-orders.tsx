@@ -194,7 +194,21 @@ export function ProfileOrders() {
   )
 }
 
-function OrderItem({ order }) {
+type Order = {
+  id: string
+  date: string
+  status: string
+  total: number
+  items: {
+    id: number
+    name: string
+    price: number
+    quantity: number
+    image: string
+  }[]
+}
+
+function OrderItem({ order }: { order: Order }) {
   return (
     <div className="border rounded-lg p-4 shadow-sm">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">

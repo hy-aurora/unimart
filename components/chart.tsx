@@ -1,4 +1,4 @@
-import type React from "react"
+import React from "react"
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Line, Legend } from "recharts"
 
 interface ChartData {
@@ -15,7 +15,7 @@ interface ChartContainerProps {
 export const ChartContainer: React.FC<ChartContainerProps> = ({ children, height = 300 }) => {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      {children}
+      {React.isValidElement(children) ? children : <>{children}</>}
     </ResponsiveContainer>
   )
 }
@@ -60,7 +60,7 @@ interface ChartBarProps {
 }
 
 export const ChartBar: React.FC<ChartBarProps> = ({ dataKey, fill, radius }) => {
-  return <Bar dataKey={dataKey} fill={fill} radius={radius} />
+  return <Bar dataKey={dataKey} fill={fill} radius={radius?.length === 4 ? radius as [number, number, number, number] : undefined} />
 }
 
 interface ChartLineProps {

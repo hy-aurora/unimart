@@ -1,13 +1,17 @@
+"use client";
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Filter } from "lucide-react"
+import { useParams } from "next/navigation" // Import useParams
+import { ArrowLeft, Filter, Star } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ProductCard } from "@/components/product-card"
+import { Badge } from "@/components/ui/badge"
 
-export default function SchoolPage({ params }: { params: { id: string } }) {
-  const schoolId = params.id
+export default function SchoolPage() {
+  const params = useParams() // Use useParams to access route parameters
+  const schoolId = params.id as string
 
   // Mock data for school
   const school = {
@@ -49,53 +53,53 @@ export default function SchoolPage({ params }: { params: { id: string } }) {
   return (
     <div className="container px-4 py-8">
       <div className="mb-6">
-        <Link href="/schools" className="flex items-center text-sm text-gray-500 hover:text-primary">
-          <ArrowLeft className="mr-1 h-4 w-4" />
+        <Link href="/schools" className="group flex items-center text-sm text-gray-500 hover:text-indigo-600 transition-colors">
+          <ArrowLeft className="mr-1 h-4 w-4 transition-transform group-hover:-translate-x-1" />
           Back to Schools
         </Link>
       </div>
 
-      <div className="relative w-full h-[200px] md:h-[300px] rounded-lg overflow-hidden mb-8">
-        <Image src={school.banner || "/placeholder.svg"} alt={school.name} fill className="object-cover" />
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+      <div className="relative w-full h-[220px] md:h-[320px] rounded-xl overflow-hidden mb-10 shadow-md">
+        <Image src={school.banner || "/placeholder.svg"} alt={school.name} fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 flex items-center justify-center">
           <div className="text-center text-white">
             <div className="flex justify-center mb-4">
-              <div className="bg-white rounded-full p-2 w-20 h-20 flex items-center justify-center">
+              <div className="bg-white rounded-full p-2 w-24 h-24 flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform">
                 <Image
                   src={school.logo || "/placeholder.svg"}
                   alt={school.name}
-                  width={60}
-                  height={60}
+                  width={70}
+                  height={70}
                   className="object-contain"
                 />
               </div>
             </div>
-            <h1 className="text-3xl font-bold">{school.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold">{school.name}</h1>
           </div>
         </div>
       </div>
 
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">About the School Uniform</h2>
-        <p className="text-muted-foreground">{school.description}</p>
+      <div className="mb-10 bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-xl">
+        <h2 className="text-2xl font-bold mb-4 text-indigo-900 dark:text-indigo-400">About the School Uniform</h2>
+        <p className="text-indigo-700/80 dark:text-indigo-300/80">{school.description}</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-1/4">
-          <div className="sticky top-20">
+          <div className="sticky top-20 bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold">Categories</h3>
+              <h3 className="font-bold text-indigo-900 dark:text-indigo-400">Categories</h3>
               <Button variant="ghost" size="sm" className="md:hidden">
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
             </div>
             <div className="space-y-1">
-              <Button variant="ghost" className="w-full justify-start font-normal">
+              <Button variant="ghost" className="w-full justify-start font-normal hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/50">
                 All Items
               </Button>
               {categories.map((category) => (
-                <Button key={category.id} variant="ghost" className="w-full justify-start font-normal">
+                <Button key={category.id} variant="ghost" className="w-full justify-start font-normal hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/50">
                   {category.name}
                 </Button>
               ))}
@@ -180,11 +184,11 @@ export default function SchoolPage({ params }: { params: { id: string } }) {
         </div>
 
         <div className="md:w-3/4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Products</h2>
+          <div className="flex justify-between items-center mb-6 bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+            <h2 className="text-2xl font-bold text-indigo-900 dark:text-indigo-400">Products</h2>
             <div className="flex items-center">
               <span className="text-sm text-gray-500 mr-2">Sort by:</span>
-              <select className="text-sm border rounded p-1">
+              <select className="text-sm border rounded-lg p-2 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 <option>Popularity</option>
                 <option>Price: Low to High</option>
                 <option>Price: High to Low</option>

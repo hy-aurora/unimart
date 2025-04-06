@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, SlidersHorizontal } from "lucide-react"
+import { Search, SlidersHorizontal, Tag, School, CreditCard } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 
 export default function CatalogPage() {
   const [sortBy, setSortBy] = useState("popularity")
@@ -60,17 +61,28 @@ export default function CatalogPage() {
   }))
 
   return (
-    <div className="container px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-indigo-900 dark:text-indigo-400">Product Catalog</h1>
+    <div className="container px-4 py-12">
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="text-4xl font-bold text-indigo-900 dark:text-indigo-400 mb-2">Product Catalog</h1>
+          <p className="text-lg text-indigo-600/70 dark:text-indigo-300/70">
+            Browse our selection of high-quality school uniforms
+          </p>
+        </div>
+        <Badge variant="outline" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-indigo-600 border-indigo-200 bg-indigo-50 dark:bg-indigo-950/30">
+          <Tag className="h-4 w-4" />
+          <span className="text-sm font-medium">{products.length} Products</span>
+        </Badge>
+      </div>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
+      <div className="flex flex-col md:flex-row gap-4 mb-10 bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input placeholder="Search products..." className="pl-10" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
+          <Input placeholder="Search products..." className="pl-10 border-indigo-100 dark:border-indigo-800 focus-visible:ring-indigo-500" />
         </div>
         <div className="w-full md:w-48">
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger>
+            <SelectTrigger className="border-indigo-100 dark:border-indigo-800 focus:ring-indigo-500">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -83,23 +95,26 @@ export default function CatalogPage() {
         </div>
         <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" className="md:w-auto flex items-center gap-2 border-indigo-200">
+            <Button variant="outline" className="md:w-auto flex items-center gap-2 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700">
               <SlidersHorizontal className="h-4 w-4" />
               Filters
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+          <SheetContent side="right" className="w-[300px] sm:w-[400px] border-l border-indigo-100 dark:border-indigo-900">
             <div className="py-4">
-              <h2 className="text-lg font-semibold mb-4 text-indigo-900 dark:text-indigo-400">Filters</h2>
+              <h2 className="text-xl font-semibold mb-6 text-indigo-900 dark:text-indigo-400">Filters</h2>
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div>
-                  <h3 className="font-medium mb-3 text-indigo-900 dark:text-indigo-400">Categories</h3>
-                  <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Tag className="h-4 w-4 text-indigo-600" />
+                    <h3 className="font-medium text-indigo-900 dark:text-indigo-400">Categories</h3>
+                  </div>
+                  <div className="space-y-3 pl-1">
                     {categories.map((category) => (
-                      <div key={category.id} className="flex items-center">
-                        <Checkbox id={`category-${category.id}`} className="mr-2" />
-                        <Label htmlFor={`category-${category.id}`} className="text-sm">
+                      <div key={category.id} className="flex items-center space-x-3">
+                        <Checkbox id={`category-${category.id}`} className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                        <Label htmlFor={`category-${category.id}`} className="text-sm font-medium">
                           {category.name}
                         </Label>
                       </div>
@@ -107,15 +122,18 @@ export default function CatalogPage() {
                   </div>
                 </div>
 
-                <Separator />
+                <Separator className="bg-indigo-100 dark:bg-indigo-800" />
 
                 <div>
-                  <h3 className="font-medium mb-3 text-indigo-900 dark:text-indigo-400">Schools</h3>
-                  <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-4">
+                    <School className="h-4 w-4 text-indigo-600" />
+                    <h3 className="font-medium text-indigo-900 dark:text-indigo-400">Schools</h3>
+                  </div>
+                  <div className="space-y-3 pl-1">
                     {schools.map((school) => (
-                      <div key={school.id} className="flex items-center">
-                        <Checkbox id={`school-${school.id}`} className="mr-2" />
-                        <Label htmlFor={`school-${school.id}`} className="text-sm">
+                      <div key={school.id} className="flex items-center space-x-3">
+                        <Checkbox id={`school-${school.id}`} className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                        <Label htmlFor={`school-${school.id}`} className="text-sm font-medium">
                           {school.name}
                         </Label>
                       </div>
@@ -123,54 +141,54 @@ export default function CatalogPage() {
                   </div>
                 </div>
 
-                <Separator />
+                <Separator className="bg-indigo-100 dark:bg-indigo-800" />
 
                 <div>
-                  <h3 className="font-medium mb-3 text-indigo-900 dark:text-indigo-400">Sizes</h3>
-                  <div className="space-y-2">
+                  <h3 className="font-medium mb-4 text-indigo-900 dark:text-indigo-400">Sizes</h3>
+                  <div className="flex flex-wrap gap-2">
                     {["XS", "S", "M", "L", "XL"].map((size) => (
-                      <div key={size} className="flex items-center">
-                        <Checkbox id={`size-${size}`} className="mr-2" />
-                        <Label htmlFor={`size-${size}`} className="text-sm">
-                          {size}
-                        </Label>
+                      <div key={size} className="flex items-center justify-center h-9 w-9 rounded-md border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-500 cursor-pointer transition-colors">
+                        <span className="text-sm font-medium">{size}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <Separator />
+                <Separator className="bg-indigo-100 dark:bg-indigo-800" />
 
                 <div>
-                  <h3 className="font-medium mb-3 text-indigo-900 dark:text-indigo-400">Price Range</h3>
-                  <RadioGroup defaultValue="all">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CreditCard className="h-4 w-4 text-indigo-600" />
+                    <h3 className="font-medium text-indigo-900 dark:text-indigo-400">Price Range</h3>
+                  </div>
+                  <RadioGroup defaultValue="all" className="space-y-3 pl-1">
                     <div className="flex items-center">
-                      <RadioGroupItem id="price-all" value="all" className="mr-2" />
-                      <Label htmlFor="price-all" className="text-sm">
+                      <RadioGroupItem id="price-all" value="all" className="mr-2 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                      <Label htmlFor="price-all" className="text-sm font-medium">
                         All Prices
                       </Label>
                     </div>
                     <div className="flex items-center">
-                      <RadioGroupItem id="price-under-10" value="under-10" className="mr-2" />
-                      <Label htmlFor="price-under-10" className="text-sm">
+                      <RadioGroupItem id="price-under-10" value="under-10" className="mr-2 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                      <Label htmlFor="price-under-10" className="text-sm font-medium">
                         Under £10
                       </Label>
                     </div>
                     <div className="flex items-center">
-                      <RadioGroupItem id="price-10-20" value="10-20" className="mr-2" />
-                      <Label htmlFor="price-10-20" className="text-sm">
+                      <RadioGroupItem id="price-10-20" value="10-20" className="mr-2 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                      <Label htmlFor="price-10-20" className="text-sm font-medium">
                         £10 - £20
                       </Label>
                     </div>
                     <div className="flex items-center">
-                      <RadioGroupItem id="price-20-30" value="20-30" className="mr-2" />
-                      <Label htmlFor="price-20-30" className="text-sm">
+                      <RadioGroupItem id="price-20-30" value="20-30" className="mr-2 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                      <Label htmlFor="price-20-30" className="text-sm font-medium">
                         £20 - £30
                       </Label>
                     </div>
                     <div className="flex items-center">
-                      <RadioGroupItem id="price-over-30" value="over-30" className="mr-2" />
-                      <Label htmlFor="price-over-30" className="text-sm">
+                      <RadioGroupItem id="price-over-30" value="over-30" className="mr-2 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                      <Label htmlFor="price-over-30" className="text-sm font-medium">
                         Over £30
                       </Label>
                     </div>
@@ -181,7 +199,7 @@ export default function CatalogPage() {
                   <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={() => setFiltersOpen(false)}>
                     Apply Filters
                   </Button>
-                  <Button variant="outline" className="flex-1 border-indigo-200">
+                  <Button variant="outline" className="flex-1 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700">
                     Reset
                   </Button>
                 </div>

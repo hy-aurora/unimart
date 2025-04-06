@@ -1,16 +1,18 @@
 "use client";
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowLeft, Share2, Star } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { useParams } from "next/navigation"; // Import useParams
+import { ArrowLeft, Share2, Star } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ProductCard } from "@/components/product-card"
-import { AddToCartForm } from "@/components/add-to-cart-form"
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProductCard } from "@/components/product-card";
+import { AddToCartForm } from "@/components/add-to-cart-form";
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  const productId = params.id
+export default function ProductPage() {
+  const params = useParams(); // Use useParams to access route parameters
+  const productId = params.id as string; // Get the id from the route parameters
 
   // Mock data for product
   const product = {
@@ -213,6 +215,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 

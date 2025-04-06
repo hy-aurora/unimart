@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { Filter, Search } from "lucide-react"
+import { Filter, Search, Clock, MapPin, Tag } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
 
 // Mock data for listings
 const listings = [
@@ -93,54 +94,54 @@ const listings = [
 
 export default function ListingsPage() {
   return (
-    <div className="container py-8 px-4 md:px-6">
+    <div className="container py-12 px-4 md:px-6">
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold">Browse Listings</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-bold text-indigo-900 dark:text-indigo-400">Browse Listings</h1>
+          <p className="text-xl text-indigo-600/70 dark:text-indigo-300/70">
             Find the perfect items from students in your university
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-6">
           {/* Filters - Desktop */}
           <div className="hidden md:flex md:w-1/4 lg:w-1/5 flex-col gap-6">
-            <div className="border rounded-lg p-4">
-              <h3 className="font-medium mb-3">Categories</h3>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="all" />
-                  <label htmlFor="all" className="text-sm">All Categories</label>
+            <div className="border rounded-xl p-5 shadow-sm bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800">
+              <h3 className="font-medium mb-4 text-indigo-900 dark:text-indigo-400 text-lg">Categories</h3>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Checkbox id="all" className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                  <label htmlFor="all" className="text-sm font-medium">All Categories</label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="electronics" />
-                  <label htmlFor="electronics" className="text-sm">Electronics</label>
+                <div className="flex items-center space-x-3">
+                  <Checkbox id="electronics" className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                  <label htmlFor="electronics" className="text-sm font-medium">Electronics</label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="textbooks" />
-                  <label htmlFor="textbooks" className="text-sm">Textbooks</label>
+                <div className="flex items-center space-x-3">
+                  <Checkbox id="textbooks" className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                  <label htmlFor="textbooks" className="text-sm font-medium">Textbooks</label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="furniture" />
-                  <label htmlFor="furniture" className="text-sm">Furniture</label>
+                <div className="flex items-center space-x-3">
+                  <Checkbox id="furniture" className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                  <label htmlFor="furniture" className="text-sm font-medium">Furniture</label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="clothing" />
-                  <label htmlFor="clothing" className="text-sm">Clothing</label>
+                <div className="flex items-center space-x-3">
+                  <Checkbox id="clothing" className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600" />
+                  <label htmlFor="clothing" className="text-sm font-medium">Clothing</label>
                 </div>
               </div>
             </div>
             
-            <div className="border rounded-lg p-4">
-              <h3 className="font-medium mb-3">Price Range</h3>
+            <div className="border rounded-xl p-5 shadow-sm bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800">
+              <h3 className="font-medium mb-4 text-indigo-900 dark:text-indigo-400 text-lg">Price Range</h3>
               <div className="grid grid-cols-2 gap-2">
                 <Input type="number" placeholder="Min" />
                 <Input type="number" placeholder="Max" />
               </div>
             </div>
             
-            <div className="border rounded-lg p-4">
-              <h3 className="font-medium mb-3">Location</h3>
+            <div className="border rounded-xl p-5 shadow-sm bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800">
+              <h3 className="font-medium mb-4 text-indigo-900 dark:text-indigo-400 text-lg">Location</h3>
               <Select>
                 <SelectTrigger>
                   <SelectValue placeholder="Select location" />
@@ -154,18 +155,18 @@ export default function ListingsPage() {
               </Select>
             </div>
             
-            <Button>Apply Filters</Button>
+            <Button className="bg-indigo-600 hover:bg-indigo-700">Apply Filters</Button>
           </div>
 
           <div className="flex-1">
             {/* Search & Sort */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8 bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
               <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input type="search" placeholder="Search listings..." className="pl-8" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-indigo-500" />
+                <Input type="search" placeholder="Search listings..." className="pl-9 border-indigo-100 dark:border-indigo-800 focus-visible:ring-indigo-500" />
               </div>
               <Select>
-                <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px] border-indigo-100 dark:border-indigo-800 focus:ring-indigo-500">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -177,7 +178,7 @@ export default function ListingsPage() {
               </Select>
               
               {/* Mobile Filters Button */}
-              <Button variant="outline" className="md:hidden flex items-center gap-2">
+              <Button variant="outline" className="md:hidden flex items-center gap-2 border-indigo-200">
                 <Filter className="h-4 w-4" />
                 Filters
               </Button>
@@ -186,36 +187,38 @@ export default function ListingsPage() {
             {/* Listings Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {listings.map((item) => (
-                <Card key={item.id} className="overflow-hidden">
+                <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow border-gray-100 dark:border-gray-800">
                   <div className="aspect-video relative">
                     <Image 
                       src={item.image} 
                       alt={item.title}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform hover:scale-105 duration-300"
                     />
+                    <Badge className="absolute top-2 right-2 bg-indigo-600">${item.price}</Badge>
                   </div>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{item.title}</CardTitle>
-                      <span className="font-bold text-lg">${item.price}</span>
-                    </div>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg text-indigo-900 dark:text-indigo-400">{item.title}</CardTitle>
                     <CardDescription className="line-clamp-2">{item.description}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col text-sm text-muted-foreground">
-                      <div className="flex justify-between">
-                        <span>{item.seller}</span>
-                        <span>{item.created}</span>
-                      </div>
-                      <div className="flex justify-between mt-1">
-                        <span>{item.location}</span>
+                  <CardContent className="pb-2">
+                    <div className="flex flex-col text-sm space-y-1.5">
+                      <div className="flex items-center text-indigo-600">
+                        <Tag className="h-4 w-4 mr-1.5" />
                         <span>{item.category}</span>
+                      </div>
+                      <div className="flex items-center text-gray-500">
+                        <MapPin className="h-4 w-4 mr-1.5" />
+                        <span>{item.location}</span>
+                      </div>
+                      <div className="flex items-center text-gray-500">
+                        <Clock className="h-4 w-4 mr-1.5" />
+                        <span>{item.created} • {item.seller}</span>
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button asChild className="w-full">
+                    <Button asChild className="w-full bg-indigo-600 hover:bg-indigo-700">
                       <Link href={`/items/${item.id}`}>View Details</Link>
                     </Button>
                   </CardFooter>

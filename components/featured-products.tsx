@@ -71,7 +71,7 @@ export function FeaturedProducts() {
     },
   ]
 
-  const scrollContainer = (direction) => {
+  const scrollContainer = (direction: string) => {
     const container = document.getElementById("featured-products-container")
     if (!container) return
 
