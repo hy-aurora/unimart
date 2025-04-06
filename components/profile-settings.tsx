@@ -31,7 +31,7 @@ export function ProfileSettings() {
     },
   })
 
-  const handleNotificationChange = (key, value) => {
+  const handleNotificationChange = (key: string, value: boolean) => {
     setUser({
       ...user,
       notifications: {
@@ -125,38 +125,38 @@ export function ProfileSettings() {
               <RadioGroup value={theme} onValueChange={setTheme} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Label
                   htmlFor="theme-light"
-                  className="flex flex-col items-center border rounded-lg p-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-900"
+                  className="flex flex-col items-center border rounded-lg p-4 cursor-pointer transition-colors hover:bg-accent"
                 >
-                  <div className="bg-white dark:bg-gray-800 p-3 rounded-full mb-3 border">
+                  <div className="bg-background p-3 rounded-full mb-3 border">
                     <Sun className="h-6 w-6 text-amber-500" />
                   </div>
                   <RadioGroupItem id="theme-light" value="light" className="sr-only" />
-                  <span className="font-medium text-indigo-900 dark:text-indigo-400">Light</span>
-                  <span className="text-xs text-gray-500 mt-1">Light mode interface</span>
+                  <span className="font-medium text-foreground">Light</span>
+                  <span className="text-xs text-muted-foreground mt-1">Light mode interface</span>
                 </Label>
 
                 <Label
                   htmlFor="theme-dark"
-                  className="flex flex-col items-center border rounded-lg p-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-900"
+                  className="flex flex-col items-center border rounded-lg p-4 cursor-pointer transition-colors hover:bg-accent"
                 >
-                  <div className="bg-white dark:bg-gray-800 p-3 rounded-full mb-3 border">
-                    <Moon className="h-6 w-6 text-indigo-600" />
+                  <div className="bg-background p-3 rounded-full mb-3 border">
+                    <Moon className="h-6 w-6 text-primary" />
                   </div>
                   <RadioGroupItem id="theme-dark" value="dark" className="sr-only" />
-                  <span className="font-medium text-indigo-900 dark:text-indigo-400">Dark</span>
-                  <span className="text-xs text-gray-500 mt-1">Dark mode interface</span>
+                  <span className="font-medium text-foreground">Dark</span>
+                  <span className="text-xs text-muted-foreground mt-1">Dark mode interface</span>
                 </Label>
 
                 <Label
                   htmlFor="theme-system"
-                  className="flex flex-col items-center border rounded-lg p-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-900"
+                  className="flex flex-col items-center border rounded-lg p-4 cursor-pointer transition-colors hover:bg-accent"
                 >
-                  <div className="bg-white dark:bg-gray-800 p-3 rounded-full mb-3 border">
-                    <div className="h-6 w-6 bg-gradient-to-r from-amber-500 to-indigo-600 rounded-full" />
+                  <div className="bg-background p-3 rounded-full mb-3 border">
+                    <div className="h-6 w-6 bg-gradient-to-r from-amber-500 to-primary rounded-full" />
                   </div>
                   <RadioGroupItem id="theme-system" value="system" className="sr-only" />
-                  <span className="font-medium text-indigo-900 dark:text-indigo-400">System</span>
-                  <span className="text-xs text-gray-500 mt-1">Follow system preference</span>
+                  <span className="font-medium text-foreground">System</span>
+                  <span className="text-xs text-muted-foreground mt-1">Follow system preference</span>
                 </Label>
               </RadioGroup>
             </div>

@@ -77,7 +77,7 @@ export default function SchoolPage({ params }: { params: { id: string } }) {
 
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-4">About the School Uniform</h2>
-        <p className="text-gray-600">{school.description}</p>
+        <p className="text-muted-foreground">{school.description}</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
