@@ -35,7 +35,7 @@ export default function ProductPage() {
 
   // Mock data for related products
   const relatedProducts = Array.from({ length: 4 }, (_, i) => ({
-    id: i + 1,
+    id: (i + 1).toString(), // Convert id to string
     name: ["White Shirt", "Navy Trousers", "School Tie", "School Jumper"][i],
     price: Math.floor(Math.random() * 30) + 10,
     image: `/images/placeholder.webp`,

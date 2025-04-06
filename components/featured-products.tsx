@@ -10,7 +10,7 @@ export function FeaturedProducts() {
   // Mock featured products
   const products = [
     {
-      id: 1,
+      id: "1", // Convert id to string
       name: "Premium School Blazer",
       price: 49.99,
       image: "/images/placeholder.webp",
@@ -18,7 +18,7 @@ export function FeaturedProducts() {
       badge: "Best Seller",
     },
     {
-      id: 2,
+      id: "2", // Convert id to string
       name: "White School Shirt (Pack of 2)",
       price: 18.99,
       image: "/images/placeholder.webp",
@@ -26,14 +26,14 @@ export function FeaturedProducts() {
       badge: "Popular",
     },
     {
-      id: 3,
+      id: "3", // Convert id to string
       name: "Navy School Trousers",
       price: 22.5,
       image: "/images/placeholder.webp",
       category: "Trousers & Skirts",
     },
     {
-      id: 4,
+      id: "4", // Convert id to string
       name: "School Tie",
       price: 9.99,
       image: "/images/placeholder.webp",
@@ -41,21 +41,21 @@ export function FeaturedProducts() {
       badge: "New",
     },
     {
-      id: 5,
+      id: "5", // Convert id to string
       name: "PE T-Shirt",
       price: 12.99,
       image: "/images/placeholder.webp",
       category: "PE Kit",
     },
     {
-      id: 6,
+      id: "6", // Convert id to string
       name: "School Cardigan",
       price: 24.99,
       image: "/images/placeholder.webp",
       category: "Blazers & Jumpers",
     },
     {
-      id: 7,
+      id: "7", // Convert id to string
       name: "School Backpack",
       price: 29.99,
       image: "/images/placeholder.webp",
@@ -63,7 +63,7 @@ export function FeaturedProducts() {
       badge: "Sale",
     },
     {
-      id: 8,
+      id: "8", // Convert id to string
       name: "Grey Pleated Skirt",
       price: 19.99,
       image: "/images/placeholder.webp",

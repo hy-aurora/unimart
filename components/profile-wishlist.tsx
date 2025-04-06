@@ -10,35 +10,35 @@ export function ProfileWishlist() {
   // Mock wishlist data
   const [wishlistItems, setWishlistItems] = useState([
     {
-      id: 1,
+      id: "1", // Convert id to string
       name: "Premium School Blazer",
       price: 49.99,
       image: "/images/placeholder.webp",
       category: "Blazers & Jumpers",
     },
     {
-      id: 2,
+      id: "2", // Convert id to string
       name: "White School Shirt (Pack of 2)",
       price: 18.99,
       image: "/images/placeholder.webp",
       category: "Shirts & Blouses",
     },
     {
-      id: 3,
+      id: "3", // Convert id to string
       name: "School Backpack",
       price: 29.99,
       image: "/images/placeholder.webp",
       category: "Accessories",
     },
     {
-      id: 4,
+      id: "4", // Convert id to string
       name: "PE Kit Bundle",
       price: 45.99,
       image: "/placeholder.svg?height=300&width=300&text=PE+Kit",
       category: "PE Kit",
     },
     {
-      id: 5,
+      id: "5", // Convert id to string
       name: "School Water Bottle",
       price: 12.99,
       image: "/placeholder.svg?height=300&width=300&text=Bottle",
@@ -46,7 +46,7 @@ export function ProfileWishlist() {
     },
   ])
 
-  const removeFromWishlist = (id: number) => {
+  const removeFromWishlist = (id: string) => {
     setWishlistItems(wishlistItems.filter((item) => item.id !== id))
   }
 
