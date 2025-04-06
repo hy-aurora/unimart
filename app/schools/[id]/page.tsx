@@ -34,7 +34,7 @@ export default function SchoolPage() {
 
   // Mock data for products
   const products = Array.from({ length: 8 }, (_, i) => ({
-    id: i + 1,
+    id: (i + 1).toString(), // Convert id to string
     name: [
       "White Shirt",
       "Navy Trousers",
@@ -46,7 +46,7 @@ export default function SchoolPage() {
       "School Bag",
     ][i],
     price: Math.floor(Math.random() * 30) + 10,
-    image: `/placeholder.svg?height=300&width=300&text=Product+${i + 1}`,
+    image: `/images/placeholder.webp`,
     category: categories[i % categories.length].name,
   }))
 
