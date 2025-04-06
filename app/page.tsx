@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowRight, CheckCircle, School, Star, Truck } from "lucide-react"
+import { ArrowRight, CheckCircle, School, Star, Truck, Ruler, Shield, Users } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { HeroCarousel } from "@/components/hero-carousel"
@@ -20,30 +20,39 @@ export default function Home() {
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-indigo-900">
-                Why Choose Us?
+                Why Choose UniMart?
               </h2>
               <p className="max-w-[900px] text-gray-600 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                 We partner with schools to provide high-quality uniforms with a seamless ordering experience.
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mt-12">
             <div className="flex flex-col items-center space-y-2 border p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white">
               <div className="p-3 bg-indigo-100 rounded-full">
                 <School className="h-8 w-8 text-indigo-600" />
               </div>
               <h3 className="text-xl font-bold text-indigo-900">School Partnerships</h3>
               <p className="text-gray-600 text-center">
-                We work directly with schools to ensure uniform compliance and quality.
+                Direct partnerships ensure uniform compliance and quality standards.
               </p>
             </div>
             <div className="flex flex-col items-center space-y-2 border p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white">
               <div className="p-3 bg-indigo-100 rounded-full">
-                <CheckCircle className="h-8 w-8 text-indigo-600" />
+                <Ruler className="h-8 w-8 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-bold text-indigo-900">Quality Guaranteed</h3>
+              <h3 className="text-xl font-bold text-indigo-900">Custom Sizing</h3>
               <p className="text-gray-600 text-center">
-                All our products are made with premium materials for durability and comfort.
+                Perfect fit guaranteed with our custom measurement service.
+              </p>
+            </div>
+            <div className="flex flex-col items-center space-y-2 border p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white">
+              <div className="p-3 bg-indigo-100 rounded-full">
+                <Shield className="h-8 w-8 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold text-indigo-900">Quality Assured</h3>
+              <p className="text-gray-600 text-center">
+                Premium materials and strict quality control for durability.
               </p>
             </div>
             <div className="flex flex-col items-center space-y-2 border p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white">
@@ -52,15 +61,54 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold text-indigo-900">Fast Delivery</h3>
               <p className="text-gray-600 text-center">
-                Quick and reliable shipping to your doorstep or school pickup.
+                Quick and reliable shipping to your doorstep or school.
               </p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Custom Sizing Promotion */}
+      <section className="w-full py-12 md:py-20 bg-indigo-50">
+        <div className="container px-4 md:px-6">
+          <div className="grid gap-8 md:grid-cols-2 items-center">
+            <div>
+              <h2 className="text-3xl font-bold mb-4 text-indigo-900">Perfect Fit Guarantee</h2>
+              <p className="text-gray-600 mb-6">
+                Get uniforms tailored to your exact measurements. Our custom sizing service ensures comfort and confidence
+                for every student.
+              </p>
+              <ul className="space-y-4">
+                {[
+                  "Professional measurement guidance",
+                  "Precise tailoring to your specifications",
+                  "Alterations if needed",
+                  "Quality materials that last",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span className="text-gray-600">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button asChild className="mt-6 bg-indigo-600 hover:bg-indigo-700">
+                <Link href="/size-guide">Learn More About Custom Sizing</Link>
+              </Button>
+            </div>
+            <div className="relative aspect-square">
+              <Image
+                src="/placeholder.svg?height=600&width=600&text=Custom+Sizing"
+                alt="Custom Sizing"
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Products */}
-      <section className="w-full py-12 md:py-20 bg-gray-50">
+      <section className="w-full py-12 md:py-20 bg-white">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center mb-10">
             <div className="space-y-2">
@@ -77,7 +125,7 @@ export default function Home() {
       </section>
 
       {/* Featured Schools */}
-      <section className="w-full py-12 md:py-20 bg-white">
+      <section className="w-full py-12 md:py-20 bg-gray-50">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
@@ -122,7 +170,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="w-full py-12 md:py-20 bg-indigo-50">
+      <section className="w-full py-12 md:py-20 bg-white">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
@@ -185,6 +233,61 @@ export default function Home() {
         </div>
       </section>
 
+      {/* School Partnership */}
+      <section className="w-full py-12 md:py-20 bg-indigo-50">
+        <div className="container px-4 md:px-6">
+          <div className="grid gap-8 md:grid-cols-2 items-center">
+            <div className="relative aspect-square">
+              <Image
+                src="/placeholder.svg?height=600&width=600&text=School+Partnership"
+                alt="School Partnership"
+                fill
+                className="object-cover rounded-lg"
+              />
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold mb-4 text-indigo-900">Partner With UniMart</h2>
+              <p className="text-gray-600 mb-6">
+                Join our network of partner schools and provide your students with high-quality uniforms and exceptional
+                service.
+              </p>
+              <div className="grid gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="bg-white p-2 rounded-lg">
+                    <Shield className="h-6 w-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-indigo-900">Quality Assurance</h3>
+                    <p className="text-gray-600">Consistent quality and compliance with school uniform policies.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="bg-white p-2 rounded-lg">
+                    <Users className="h-6 w-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-indigo-900">Dedicated Support</h3>
+                    <p className="text-gray-600">Personal account manager and priority customer service.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="bg-white p-2 rounded-lg">
+                    <Truck className="h-6 w-6 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-indigo-900">Efficient Distribution</h3>
+                    <p className="text-gray-600">Direct delivery to school or individual student addresses.</p>
+                  </div>
+                </div>
+              </div>
+              <Button asChild className="mt-6 bg-indigo-600 hover:bg-indigo-700">
+                <Link href="/contact">Become a Partner School</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="w-full py-12 md:py-20 bg-indigo-900 text-white">
         <div className="container px-4 md:px-6">
@@ -211,4 +314,3 @@ export default function Home() {
     </div>
   )
 }
-

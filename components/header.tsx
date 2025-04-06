@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { Menu, Search, ShoppingBag, User, X, Heart, Sun, Moon } from "lucide-react"
+import { Menu, Search, ShoppingBag, User, X, Heart } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -16,10 +16,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const { theme, setTheme } = useTheme()
 
   // Mock cart count
   const cartCount = 3
@@ -36,8 +36,8 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="left" className="w-[300px] sm:w-[400px]">
             <nav className="flex flex-col gap-4">
-              <Link href="/" className="text-lg font-bold text-indigo-900">
-                SchoolUniform.co
+              <Link href="/" className="text-lg font-bold text-indigo-900 dark:text-indigo-400">
+                UniMart
               </Link>
               <Link href="/schools" className="text-sm font-medium">
                 Schools
@@ -54,17 +54,14 @@ export function Header() {
               <Link href="/contact" className="text-sm font-medium">
                 Contact
               </Link>
-              <div className="flex items-center mt-4 space-x-2">
-                <Button variant="outline" size="sm" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                  {theme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
-                  {theme === "dark" ? "Light Mode" : "Dark Mode"}
-                </Button>
+              <div className="flex items-center mt-4">
+                <ThemeToggle />
               </div>
             </nav>
           </SheetContent>
         </Sheet>
         <Link href="/" className="mr-6 hidden md:flex">
-          <span className="text-xl font-bold text-indigo-900 dark:text-indigo-400">SchoolUniform.co</span>
+          <span className="text-xl font-bold text-indigo-900 dark:text-indigo-400">UniMart</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm">
           <Link
@@ -114,6 +111,8 @@ export function Header() {
             </Button>
           )}
 
+          <ThemeToggle />
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -143,29 +142,10 @@ export function Header() {
                   Settings
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <button
-                  className="w-full text-left flex items-center"
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                >
-                  {theme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
-                  {theme === "dark" ? "Light Mode" : "Dark Mode"}
-                </button>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Sign Out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Button variant="ghost" size="icon" asChild className="relative">
-            <Link href="/profile/wishlist">
-              <Heart className="h-5 w-5" />
-              <span className="sr-only">Wishlist</span>
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-indigo-600">
-                2
-              </Badge>
-            </Link>
-          </Button>
 
           <Button variant="ghost" size="icon" asChild className="relative">
             <Link href="/cart">
@@ -183,4 +163,3 @@ export function Header() {
     </header>
   )
 }
-

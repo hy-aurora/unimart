@@ -7,7 +7,7 @@ export function Footer() {
       <div className="container px-4 md:px-6 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-indigo-900 dark:text-indigo-400">SchoolUniform.co</h3>
+            <h3 className="text-lg font-bold text-indigo-900 dark:text-indigo-400">UniMart</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               One-stop shop for all your school uniform needs. Quality products, easy ordering, and fast delivery.
             </p>
@@ -109,7 +109,7 @@ export function Footer() {
         </div>
         <div className="mt-8 border-t pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            &copy; {new Date().getFullYear()} SchoolUniform.co. All rights reserved.
+            &copy; {new Date().getFullYear()} UniMart. All rights reserved.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link href="/privacy" className="text-xs text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
