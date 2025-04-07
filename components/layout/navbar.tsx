@@ -1,22 +1,6 @@
 "use client";
-
-import { useState, useCallback } from "react";
-import NextLink from "next/link";
-import {
-  ShoppingBag,
-  User,
-  X,
-  Bell,
-  Settings,
-  LogOut,
-  ShoppingCart,
-  Home,
-  Book,
-  Info,
-  Phone,
-  Search,
-} from "lucide-react";
-import { Authenticated, Unauthenticated } from "convex/react";
+import React from "react";
+import { Icon } from "@iconify/react";
 import {
   Navbar,
   NavbarBrand,
@@ -27,271 +11,355 @@ import {
   NavbarMenuItem,
   Link,
   Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Badge,
   Modal,
   ModalContent,
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Input,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Badge,
+  Divider,
 } from "@heroui/react";
-import { ThemeToggle } from "@/components/theme-toggle";
-
-// Mock Data & Navigation Links
-const cartCount = 3;
-const notificationCount = 2;
-const notifications = [
-  { id: 1, title: "Order Shipped", content: "Your order #12345 has been shipped", time: "10 minutes ago", read: false },
-  { id: 2, title: "Sale Alert", content: "25% off on school uniforms this week!", time: "2 hours ago", read: false },
-  { id: 3, title: "New Arrival", content: "Check out our new PE Kit collection", time: "Yesterday", read: true },
-  { id: 4, title: "Order Delivered", content: "Your order #12340 has been delivered", time: "3 days ago", read: true },
-];
-
-const navLinks = [
-  { href: "/schools", label: "Schools", icon: <Book className="h-5 w-5" /> },
-  { href: "/catalog", label: "Catalog", icon: <ShoppingCart className="h-5 w-5" /> },
-  { href: "/about", label: "About Us", icon: <Info className="h-5 w-5" /> },
-  { href: "/contact", label: "Contact", icon: <Phone className="h-5 w-5" /> },
-];
+import { ThemeSwitcher } from "../theme-toggle";
+import { SignOutButton } from "@clerk/nextjs";
 
 export default function SiteNavbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+  const [isNotifOpen, setIsNotifOpen] = React.useState(false);
 
-  const handleSearch = useCallback((value: string) => {
-    console.log("Searching for:", value);
-    // Implement your search logic here
-    setIsSearchOpen(false);
-  }, []);
+  {
+    /*const categories = [
+    { label: "Electronics", href: "/category/electronics", icon: "lucide:smartphone" },
+    { label: "Fashion", href: "/category/fashion", icon: "lucide:shirt" },
+    { label: "Home & Living", href: "/category/home", icon: "lucide:home" },
+    { label: "Books", href: "/category/books", icon: "lucide:book-open" },
+    { label: "Sports", href: "/category/sports", icon: "lucide:dumbbell" },
+  ];*/
+  }
 
-  const closeMenu = useCallback(() => isMenuOpen && setIsMenuOpen(false), [isMenuOpen]);
+  const pages = [
+    { href: "/schools", label: "Schools" },
+    { href: "/catalog", label: "Catalog" },
+    { href: "/about", label: "About Us" },
+    { href: "/contact", label: "Contact Us" },
+  ];
+
+  const userActions = [
+    {
+      key: "orders",
+      label: "My Orders",
+      icon: "lucide:package",
+      href: "/cart",
+    },
+    { key: "profile", label: "Profile", icon: "lucide:user", href: "/profile" },
+  ];
+
+  const cartItemCount = 3; // Example cart count
 
   return (
-    <Navbar
-      onMenuOpenChange={setIsMenuOpen}
-      isMenuOpen={isMenuOpen}
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm shadow-sm min-h-[70px] py-2"
-    >
-      {/* Mobile Header (visible on mobile only) */}
-      <NavbarContent className="flex sm:hidden justify-between items-center">
-        <div className="flex items-center gap-2">
-          <NavbarMenuToggle aria-label={isMenuOpen ? "Close menu" : "Open menu"} />
+    <>
+      <Navbar
+        onMenuOpenChange={setIsMenuOpen}
+        maxWidth="xl"
+        className="bg-background/60 backdrop-blur-md border-b"
+        height="4rem"
+      >
+        <NavbarContent>
+          <NavbarMenuToggle
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            className="sm:hidden"
+          />
           <NavbarBrand>
-            <Link href="/" as={NextLink} className="text-2xl font-bold text-primary tracking-tight">
+            <Link
+              href="/"
+              className="font-bold text-inherit text-xl flex items-center gap-2"
+            >
+              <Icon
+                icon="lucide:shopping-bag"
+                className="h-6 w-6 text-primary"
+              />
               UniMart
             </Link>
           </NavbarBrand>
-        </div>
-        <Button as={NextLink} href="/cart" isIconOnly variant="light" className="relative">
-          <ShoppingBag className="h-5 w-5" />
-          {cartCount > 0 && <Badge color="primary" size="sm" placement="top-right">{cartCount}</Badge>}
-        </Button>
-      </NavbarContent>
+        </NavbarContent>
 
-      {/* Desktop Header */}
-      <NavbarContent className="hidden sm:flex">
-        <NavbarBrand>
-          <Link href="/" as={NextLink} className="text-2xl font-bold text-primary tracking-tight">
-            UniMart
-          </Link>
-        </NavbarBrand>
-      </NavbarContent>
+        <NavbarContent className="hidden sm:flex gap-4" justify="center">
+          <NavbarItem>
+            {/*<Dropdown>
+              <DropdownTrigger>
+                <Button
+                  variant="light"
+                  startContent={<Icon icon="lucide:layout-grid" className="h-4 w-4" />}
+                >
+                  Categories
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Categories">
+                {categories.map((category) => (
+                  <DropdownItem
+                    key={category.href}
+                    startContent={<Icon icon={category.icon} className="h-4 w-4" />}
+                  >
+                    <Link href={category.href} className="w-full">
+                      {category.label}
+                    </Link>
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>*/}
+          </NavbarItem>
+          {pages.map((page) => (
+            <NavbarItem key={page.href}>
+              <Link color="foreground" href={page.href}>
+                {page.label}
+              </Link>
+            </NavbarItem>
+          ))}
+        </NavbarContent>
 
-      {/* Desktop Navigation */}
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        {navLinks.map((link) => (
-          <NavbarItem key={link.href}>
-            <Link
-              href={link.href}
-              as={NextLink}
-              color="foreground"
-              className="text-base font-medium hover:text-primary transition-colors"
+        <NavbarContent justify="end" className="hidden sm:flex">
+          <NavbarItem>
+            <Button
+              isIconOnly
+              variant="light"
+              onPress={() => setIsSearchOpen(true)}
             >
-              {link.label}
+              <Icon icon="lucide:search" className="h-5 w-5" />
+            </Button>
+          </NavbarItem>
+          <NavbarItem>
+            <Button
+              isIconOnly
+              variant="light"
+              onPress={() => setIsNotifOpen(true)}
+            >
+              <Icon icon="lucide:bell" className="h-5 w-5" />
+            </Button>
+          </NavbarItem>
+          <NavbarItem>
+            <Link href="/cart">
+              <Badge
+                content={cartItemCount}
+                color="primary"
+                shape="circle"
+                size="sm"
+              >
+                <Button isIconOnly variant="light">
+                  <Icon icon="lucide:shopping-cart" className="h-5 w-5" />
+                </Button>
+              </Badge>
             </Link>
           </NavbarItem>
-        ))}
-      </NavbarContent>
-
-      {/* Desktop Controls */}
-      <NavbarContent justify="end" className="hidden sm:flex items-center gap-2">
-        <Button isIconOnly variant="light" onClick={() => setIsSearchOpen(true)}>
-          <Search className="h-5 w-5" />
-        </Button>
-        <ThemeToggle />
-        <Button as={NextLink} href="/cart" isIconOnly variant="light" className="relative">
-          <ShoppingBag className="h-5 w-5" />
-          {cartCount > 0 && <Badge color="primary" size="sm" placement="top-right">{cartCount}</Badge>}
-        </Button>
-        <Authenticated>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button isIconOnly variant="light" className="relative">
-                <Bell className="h-5 w-5" />
-                {notificationCount > 0 && <Badge color="primary" size="sm" placement="top-right">{notificationCount}</Badge>}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="Notifications" className="w-80">
-              <DropdownItem key="notification-title" className="font-semibold">
-                Notifications
-              </DropdownItem>
-              <>
-              {notifications.map((n) => (
-                <DropdownItem key={n.id} className={!n.read ? "bg-default-100" : ""}>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between">
-                      <span className="font-medium">{n.title}</span>
-                      <span className="text-xs text-default-400">{n.time}</span>
-                    </div>
-                    <p className="text-sm">{n.content}</p>
-                  </div>
+          <NavbarItem>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  variant="light"
+                  startContent={<Icon icon="lucide:user" className="h-5 w-5" />}
+                >
+                  Account
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="User actions">
+                <>
+                  {userActions.map((action) => (
+                    <DropdownItem
+                      key={action.key}
+                      startContent={
+                        <Icon icon={action.icon} className="h-4 w-4" />
+                      }
+                    >
+                      <Link href={action.href} className="w-full">
+                        {action.label}
+                      </Link>
+                    </DropdownItem>
+                  ))}
+                </>
+                <DropdownItem
+                  key="logout"
+                  className="text-danger"
+                  color="danger"
+                  startContent={
+                    <Icon icon="lucide:log-out" className="h-4 w-4" />
+                  }
+                >
+                  <SignOutButton>Log Out</SignOutButton>
                 </DropdownItem>
-              ))}
-              </>
-              <DropdownItem key="notification-actions" className="mt-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">Mark all as read</span>
-                  <span className="text-sm">View all</span>
-                </div>
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button isIconOnly variant="light">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="User Menu">
-              <DropdownItem key="account-title" className="font-semibold">
-                My Account
-              </DropdownItem>
-              <DropdownItem key="profile" onClick={() => (window.location.href = "/profile")}>
-                <div className="flex items-center gap-2">
-                  <User size={18} />
-                  <span>My Profile</span>
-                </div>
-              </DropdownItem>
-              <DropdownItem key="orders" onClick={() => (window.location.href = "/profile/orders")}>
-                <div className="flex items-center gap-2">
-                  <ShoppingCart size={18} />
-                  <span>My Orders</span>
-                </div>
-              </DropdownItem>
-              <DropdownItem key="settings" onClick={() => (window.location.href = "/profile/settings")}>
-                <div className="flex items-center gap-2">
-                  <Settings size={18} />
-                  <span>Settings</span>
-                </div>
-              </DropdownItem>
-              <DropdownItem key="logout" className="text-danger" color="danger">
-                <div className="flex items-center gap-2">
-                  <LogOut size={18} />
-                  <span>Sign Out</span>
-                </div>
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        </Authenticated>
-        <Unauthenticated>
-          <Button as={NextLink} href="/auth" color="primary" variant="flat">
-            Login
-          </Button>
-        </Unauthenticated>
-      </NavbarContent>
+              </DropdownMenu>
+            </Dropdown>
+          </NavbarItem>
+          <NavbarItem className="hidden lg:flex">
+            <ThemeSwitcher />
+          </NavbarItem>
+        </NavbarContent>
 
-      {/* Mobile Menu (slides in) */}
-      <NavbarMenu className="pt-4 px-4">
-        <div className="mb-6 mt-2">
-          <input
-            type="text"
-            placeholder="Search products, schools..."
-            className="w-full h-10 px-3 rounded-md border border-input"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
-          />
-        </div>
-        <NavbarMenuItem>
-          <Link href="/" as={NextLink} color="foreground" className="flex items-center gap-3 text-base" onClick={closeMenu}>
-            <Home className="h-5 w-5" />
-            Home
-          </Link>
-        </NavbarMenuItem>
-        {navLinks.map((link) => (
-          <NavbarMenuItem key={link.href}>
-            <Link href={link.href} as={NextLink} color="foreground" className="flex items-center gap-3 text-base" onClick={closeMenu}>
-              {link.icon}
-              {link.label}
-            </Link>
-          </NavbarMenuItem>
-        ))}
-        <NavbarMenuItem>
-          <Link href="/cart" as={NextLink} color="foreground" className="flex items-center justify-between gap-3 text-base" onClick={closeMenu}>
-            <div className="flex items-center gap-3">
-              <ShoppingBag className="h-5 w-5" />
-              Cart
-            </div>
-            {cartCount > 0 && <Badge color="primary">{cartCount}</Badge>}
-          </Link>
-        </NavbarMenuItem>
-        <Authenticated>
+        <NavbarMenu>
           <NavbarMenuItem>
-            <Link href="/profile" as={NextLink} color="foreground" className="flex items-center gap-3 text-base" onClick={closeMenu}>
-              <User className="h-5 w-5" />
-              My Profile
-            </Link>
-          </NavbarMenuItem>
-          <NavbarMenuItem>
-            <Link color="danger" className="flex items-center gap-3 text-base" onClick={closeMenu}>
-              <LogOut className="h-5 w-5" />
-              Sign Out
-            </Link>
-          </NavbarMenuItem>
-        </Authenticated>
-        <Unauthenticated>
-          <NavbarMenuItem className="mt-4">
-            <Button as={NextLink} href="/auth" color="primary" variant="flat" className="w-full" size="lg" onClick={closeMenu}>
-              Login
-            </Button>
-          </NavbarMenuItem>
-        </Unauthenticated>
-        <div className="mt-6">
-          <ThemeToggle />
-        </div>
-      </NavbarMenu>
-
-      {/* Search Modal using @heroui/react Modal */}
-      <Modal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)}>
-        <ModalContent>
-          <ModalHeader>
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold">Search</h3>
-              <Button isIconOnly variant="light" onClick={() => setIsSearchOpen(false)}>
-                <X className="h-6 w-6" />
-              </Button>
-            </div>
-          </ModalHeader>
-          <ModalBody>
-            <input
-              type="text"
-              placeholder="Search products, schools..."
-              className="w-full h-12 px-4 rounded-md border border-input"
-              autoFocus
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
+            <Input
+              placeholder="Search products..."
+              size="sm"
+              startContent={
+                <Icon
+                  icon="lucide:search"
+                  className="h-4 w-4 text-default-400"
+                />
+              }
+              type="search"
             />
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={() => handleSearch(searchQuery)}>Search</Button>
-          </ModalFooter>
+          </NavbarMenuItem>
+
+          {/* <NavbarMenuItem className="font-medium text-primary">Categories</NavbarMenuItem>
+          {categories.map((category) => (
+            <NavbarMenuItem key={category.href}>
+              <Link
+                color="foreground"
+                className="w-full flex items-center gap-2"
+                href={category.href}
+                size="lg"
+              >
+                <Icon icon={category.icon} className="h-4 w-4" />
+                {category.label}
+              </Link>
+            </NavbarMenuItem>
+          ))}*/}
+
+          <NavbarMenuItem className="font-medium text-primary mt-4">
+            Quick Links
+          </NavbarMenuItem>
+          {pages.map((page) => (
+            <NavbarMenuItem key={page.href}>
+              <Link
+                color="foreground"
+                className="w-full"
+                href={page.href}
+                size="lg"
+              >
+                {page.label}
+              </Link>
+            </NavbarMenuItem>
+          ))}
+
+          <Divider className="my-4" />
+
+          <NavbarMenuItem className="font-medium text-primary">
+            Account
+          </NavbarMenuItem>
+          {userActions.map((action) => (
+            <NavbarMenuItem key={action.key}>
+              <Link
+                color="foreground"
+                className="w-full flex items-center gap-2"
+                href={action.href}
+                size="lg"
+              >
+                <Icon icon={action.icon} className="h-4 w-4" />
+                {action.label}
+              </Link>
+            </NavbarMenuItem>
+          ))}
+
+          <NavbarMenuItem>
+            <Link
+              color="danger"
+              className="w-full flex items-center gap-2"
+              size="lg"
+            >
+              <SignOutButton>
+                <Icon icon="lucide:log-out" className="h-4 w-4" />
+                Log Out
+              </SignOutButton>
+            </Link>
+          </NavbarMenuItem>
+
+          <Divider className="my-4" />
+
+          <NavbarMenuItem className="flex justify-between items-center">
+            <span className="font-medium">Change theme</span>
+            <ThemeSwitcher />
+          </NavbarMenuItem>
+        </NavbarMenu>
+      </Navbar>
+
+      <Modal
+        isOpen={isSearchOpen}
+        onOpenChange={setIsSearchOpen}
+        size="2xl"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Search Products
+              </ModalHeader>
+              <ModalBody>
+                <Input
+                  autoFocus
+                  placeholder="Search products, brands, and categories..."
+                  variant="bordered"
+                  startContent={<Icon icon="lucide:search" />}
+                  size="lg"
+                />
+                {/*<div className="mt-4">
+                  <p className="text-small font-medium text-default-700">Popular Categories</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {categories.map((category) => (
+                      <Button
+                        key={category.href}
+                        variant="flat"
+                        size="sm"
+                        startContent={<Icon icon={category.icon} className="h-4 w-4" />}
+                      >
+                        {category.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>*/}
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Close
+                </Button>
+              </ModalFooter>
+            </>
+          )}
         </ModalContent>
       </Modal>
-    </Navbar>
+
+      <Modal isOpen={isNotifOpen} onOpenChange={setIsNotifOpen} size="md">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Notifications
+              </ModalHeader>
+              <ModalBody>
+                <div className="space-y-4">
+                  <p className="text-small text-default-500">
+                    Your order #12345 has been shipped!
+                  </p>
+                  <p className="text-small text-default-500">
+                    New deals available in Electronics category.
+                  </p>
+                  <p className="text-small text-default-500">
+                    Your wishlist item is now on sale!
+                  </p>
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Close
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </>
   );
 }

@@ -13,7 +13,7 @@ interface ThemeToggleProps {
   showLabel?: boolean;
 }
 
-export function ThemeToggle({
+export function ThemeSwitcher({
   className,
   iconClassName,
   variant = "ghost",

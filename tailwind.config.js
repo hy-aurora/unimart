@@ -1,15 +1,16 @@
-import type { Config } from "tailwindcss"
+import { heroui } from "@heroui/react";
 
+/** @type {import('tailwindcss').Config} */
 const config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
+    "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
@@ -20,6 +21,7 @@ const config = {
     },
     extend: {
       colors: {
+        ...heroui.colors,
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -63,11 +65,13 @@ const config = {
         },
       },
       borderRadius: {
+        ...heroui.borderRadius,
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
+        ...heroui.keyframes,
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -78,12 +82,13 @@ const config = {
         },
       },
       animation: {
+        ...heroui.animation,
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config
+  plugins: [heroui(), require("tailwindcss-animate")],
+};
 
-export default config
+export default config;
