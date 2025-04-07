@@ -26,6 +26,7 @@ import {
 } from "@heroui/react";
 import { ThemeSwitcher } from "../theme-toggle";
 import { SignOutButton } from "@clerk/nextjs";
+import { Authenticated, Unauthenticated } from "convex/react";
 
 export default function SiteNavbar() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -155,44 +156,53 @@ export default function SiteNavbar() {
               </Badge>
             </Link>
           </NavbarItem>
-          <NavbarItem>
-            <Dropdown>
-              <DropdownTrigger>
-                <Button
-                  variant="light"
-                  startContent={<Icon icon="lucide:user" className="h-5 w-5" />}
-                >
-                  Account
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu aria-label="User actions">
-                <>
-                  {userActions.map((action) => (
-                    <DropdownItem
-                      key={action.key}
-                      startContent={
-                        <Icon icon={action.icon} className="h-4 w-4" />
-                      }
-                    >
-                      <Link href={action.href} className="w-full">
-                        {action.label}
-                      </Link>
-                    </DropdownItem>
-                  ))}
-                </>
-                <DropdownItem
-                  key="logout"
-                  className="text-danger"
-                  color="danger"
-                  startContent={
-                    <Icon icon="lucide:log-out" className="h-4 w-4" />
-                  }
-                >
-                  <SignOutButton>Log Out</SignOutButton>
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </NavbarItem>
+          <Authenticated>
+            <NavbarItem>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button
+                    variant="light"
+                    startContent={
+                      <Icon icon="lucide:user" className="h-5 w-5" />
+                    }
+                  >
+                    Account
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="User actions">
+                  <>
+                    {userActions.map((action) => (
+                      <DropdownItem
+                        key={action.key}
+                        startContent={
+                          <Icon icon={action.icon} className="h-4 w-4" />
+                        }
+                      >
+                        <Link href={action.href} className="w-full">
+                          {action.label}
+                        </Link>
+                      </DropdownItem>
+                    ))}
+                  </>
+                  <DropdownItem
+                    key="logout"
+                    className="text-danger"
+                    color="danger"
+                    startContent={
+                      <Icon icon="lucide:log-out" className="h-4 w-4" />
+                    }
+                  >
+                    <SignOutButton>Log Out</SignOutButton>
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </NavbarItem>
+          </Authenticated>
+          <Unauthenticated>
+            <NavbarItem>
+              <Link href="/auth">Login / Sign Up</Link>
+            </NavbarItem>
+          </Unauthenticated>
           <NavbarItem className="hidden lg:flex">
             <ThemeSwitcher />
           </NavbarItem>
@@ -249,32 +259,46 @@ export default function SiteNavbar() {
           <NavbarMenuItem className="font-medium text-primary">
             Account
           </NavbarMenuItem>
-          {userActions.map((action) => (
-            <NavbarMenuItem key={action.key}>
+          <Authenticated>
+            {userActions.map((action) => (
+              <NavbarMenuItem key={action.key}>
+                <Link
+                  color="foreground"
+                  className="w-full flex items-center gap-2"
+                  href={action.href}
+                  size="lg"
+                >
+                  <Icon icon={action.icon} className="h-4 w-4" />
+                  {action.label}
+                </Link>
+              </NavbarMenuItem>
+            ))}
+
+            <NavbarMenuItem>
+              <Link
+                color="danger"
+                className="w-full flex items-center gap-2"
+                size="lg"
+              >
+                <SignOutButton>
+                  <Icon icon="lucide:log-out" className="h-4 w-4" />
+                  Log Out
+                </SignOutButton>
+              </Link>
+            </NavbarMenuItem>
+          </Authenticated>
+          <Unauthenticated>
+            <NavbarMenuItem>
               <Link
                 color="foreground"
                 className="w-full flex items-center gap-2"
-                href={action.href}
+                href="/auth"
                 size="lg"
               >
-                <Icon icon={action.icon} className="h-4 w-4" />
-                {action.label}
+                Login / Sign Up
               </Link>
             </NavbarMenuItem>
-          ))}
-
-          <NavbarMenuItem>
-            <Link
-              color="danger"
-              className="w-full flex items-center gap-2"
-              size="lg"
-            >
-              <SignOutButton>
-                <Icon icon="lucide:log-out" className="h-4 w-4" />
-                Log Out
-              </SignOutButton>
-            </Link>
-          </NavbarMenuItem>
+          </Unauthenticated>
 
           <Divider className="my-4" />
 
