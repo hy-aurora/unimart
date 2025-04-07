@@ -1,327 +1,297 @@
-"use client"
+"use client";
 
-import { useState, useCallback } from "react"
-import Link from "next/link"
-import { Menu, ShoppingBag, User, X, Heart, Bell, Settings, LogOut, ShoppingCart, Home, Book, Ruler, Info, Phone, ChevronDown, Search } from "lucide-react"
-import { useTheme } from "next-themes"
-
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { SearchInput } from "@/components/ui/search-input"
+import { useState, useCallback } from "react";
+import NextLink from "next/link";
 import {
+  ShoppingBag,
+  User,
+  X,
+  Bell,
+  Settings,
+  LogOut,
+  ShoppingCart,
+  Home,
+  Book,
+  Info,
+  Phone,
+  Search,
+} from "lucide-react";
+import { Authenticated, Unauthenticated } from "convex/react";
+import {
+  Navbar,
+  NavbarBrand,
+  NavbarContent,
+  NavbarItem,
+  NavbarMenuToggle,
+  NavbarMenu,
+  NavbarMenuItem,
+  Link,
+  Button,
+  Dropdown,
+  DropdownTrigger,
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogFooter
-} from "@/components/ui/dialog"
+  DropdownItem,
+  Badge,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@heroui/react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-export default function Navbar() {
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [notificationOpen, setNotificationOpen] = useState(false)
-  const isMobile = useIsMobile()
+// Mock Data & Navigation Links
+const cartCount = 3;
+const notificationCount = 2;
+const notifications = [
+  { id: 1, title: "Order Shipped", content: "Your order #12345 has been shipped", time: "10 minutes ago", read: false },
+  { id: 2, title: "Sale Alert", content: "25% off on school uniforms this week!", time: "2 hours ago", read: false },
+  { id: 3, title: "New Arrival", content: "Check out our new PE Kit collection", time: "Yesterday", read: true },
+  { id: 4, title: "Order Delivered", content: "Your order #12340 has been delivered", time: "3 days ago", read: true },
+];
 
-  // Mock counts
-  const cartCount = 3
-  const wishlistCount = 5
-  const notificationCount = 2
+const navLinks = [
+  { href: "/schools", label: "Schools", icon: <Book className="h-5 w-5" /> },
+  { href: "/catalog", label: "Catalog", icon: <ShoppingCart className="h-5 w-5" /> },
+  { href: "/about", label: "About Us", icon: <Info className="h-5 w-5" /> },
+  { href: "/contact", label: "Contact", icon: <Phone className="h-5 w-5" /> },
+];
 
-  // Mock notifications
-  const notifications = [
-    { id: 1, title: "Order Shipped", content: "Your order #12345 has been shipped", time: "10 minutes ago", read: false },
-    { id: 2, title: "Sale Alert", content: "25% off on school uniforms this week!", time: "2 hours ago", read: false },
-    { id: 3, title: "New Arrival", content: "Check out our new PE Kit collection", time: "Yesterday", read: true },
-    { id: 4, title: "Order Delivered", content: "Your order #12340 has been delivered", time: "3 days ago", read: true },
-  ]
+export default function SiteNavbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = useCallback((value: string) => {
-    console.log("Searching for:", value)
-    // Here you would typically initiate a search or navigation
-  }, [])
+    console.log("Searching for:", value);
+    // Implement your search logic here
+    setIsSearchOpen(false);
+  }, []);
+
+  const closeMenu = useCallback(() => isMenuOpen && setIsMenuOpen(false), [isMenuOpen]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm transition-all">
-      <div className="container flex h-16 items-center">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden relative z-50">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
-            <nav className="flex flex-col gap-4">
-              <Link href="/" className="text-lg font-bold text-primary dark:text-primary">
-                UniMart
-              </Link>
-              <div className="space-y-3">
-                <Link href="/" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                  <Home className="h-4 w-4" />
-                  Home
-                </Link>
-                <div className="pt-2">
-                  <p className="text-xs text-muted-foreground mb-2">CATEGORIES</p>
-                  <div className="pl-2 space-y-2">
-                    <Link href="/catalog/uniforms" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      Uniforms
-                    </Link>
-                    <Link href="/catalog/accessories" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      Accessories
-                    </Link>
-                    <Link href="/catalog/shoes" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      Shoes
-                    </Link>
-                    <Link href="/catalog/sports" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      Sports Gear
-                    </Link>
-                    <Link href="/catalog/supplies" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      School Supplies
-                    </Link>
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <p className="text-xs text-muted-foreground mb-2">BRANDS</p>
-                  <div className="pl-2 space-y-2">
-                    <Link href="/brands/nike" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      Nike
-                    </Link>
-                    <Link href="/brands/adidas" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      Adidas
-                    </Link>
-                    <Link href="/brands/clarks" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      Clarks
-                    </Link>
-                    <Link href="/brands/trutex" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      Trutex
-                    </Link>
-                    <Link href="/brands/all" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                      View All Brands
-                    </Link>
-                  </div>
-                </div>
-                <Link href="/schools" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                  <Book className="h-4 w-4" />
-                  Schools
-                </Link>
-                <Link href="/catalog" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                  <ShoppingCart className="h-4 w-4" />
-                  Catalog
-                </Link>
+    <Navbar
+      onMenuOpenChange={setIsMenuOpen}
+      isMenuOpen={isMenuOpen}
+      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm shadow-sm min-h-[70px] py-2"
+    >
+      {/* Mobile Header (visible on mobile only) */}
+      <NavbarContent className="flex sm:hidden justify-between items-center">
+        <div className="flex items-center gap-2">
+          <NavbarMenuToggle aria-label={isMenuOpen ? "Close menu" : "Open menu"} />
+          <NavbarBrand>
+            <Link href="/" as={NextLink} className="text-2xl font-bold text-primary tracking-tight">
+              UniMart
+            </Link>
+          </NavbarBrand>
+        </div>
+        <Button as={NextLink} href="/cart" isIconOnly variant="light" className="relative">
+          <ShoppingBag className="h-5 w-5" />
+          {cartCount > 0 && <Badge color="primary" size="sm" placement="top-right">{cartCount}</Badge>}
+        </Button>
+      </NavbarContent>
 
-                <Link href="/about" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                  <Info className="h-4 w-4" />
-                  About Us
-                </Link>
-                <Link href="/contact" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                  <Phone className="h-4 w-4" />
-                  Contact
-                </Link>
-              </div>
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex flex-col gap-3">
-                  <Link href="/profile" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                    <User className="h-4 w-4" />
-                    My Profile
-                  </Link>
-                  <Link href="/cart" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
-                    <ShoppingBag className="h-4 w-4" />
-                    Cart
-                    {cartCount > 0 && (
-                      <Badge className="ml-auto bg-indigo-600">{cartCount}</Badge>
-                    )}
-                  </Link>
-                </div>
-              </div>
-              <div className="flex items-center mt-4 justify-between">
-                <ThemeToggle />
-                <Button variant="outline" size="sm">Sign Out</Button>
-              </div>
-            </nav>
-          </SheetContent>
-        </Sheet>
-        <Link href="/" className="mr-6 hidden md:flex">
-          <span className="text-xl font-bold text-primary dark:text-primary">UniMart</span>
-        </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-1 px-2 hover:bg-accent/50">
-                <span>Categories</span>
-                <ChevronDown className="h-4 w-4" />
+      {/* Desktop Header */}
+      <NavbarContent className="hidden sm:flex">
+        <NavbarBrand>
+          <Link href="/" as={NextLink} className="text-2xl font-bold text-primary tracking-tight">
+            UniMart
+          </Link>
+        </NavbarBrand>
+      </NavbarContent>
+
+      {/* Desktop Navigation */}
+      <NavbarContent className="hidden sm:flex gap-4" justify="center">
+        {navLinks.map((link) => (
+          <NavbarItem key={link.href}>
+            <Link
+              href={link.href}
+              as={NextLink}
+              color="foreground"
+              className="text-base font-medium hover:text-primary transition-colors"
+            >
+              {link.label}
+            </Link>
+          </NavbarItem>
+        ))}
+      </NavbarContent>
+
+      {/* Desktop Controls */}
+      <NavbarContent justify="end" className="hidden sm:flex items-center gap-2">
+        <Button isIconOnly variant="light" onClick={() => setIsSearchOpen(true)}>
+          <Search className="h-5 w-5" />
+        </Button>
+        <ThemeToggle />
+        <Button as={NextLink} href="/cart" isIconOnly variant="light" className="relative">
+          <ShoppingBag className="h-5 w-5" />
+          {cartCount > 0 && <Badge color="primary" size="sm" placement="top-right">{cartCount}</Badge>}
+        </Button>
+        <Authenticated>
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly variant="light" className="relative">
+                <Bell className="h-5 w-5" />
+                {notificationCount > 0 && <Badge color="primary" size="sm" placement="top-right">{notificationCount}</Badge>}
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem asChild>
-                <Link href="/catalog/uniforms">Uniforms</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/catalog/accessories">Accessories</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/catalog/shoes">Shoes</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/catalog/sports">Sports Gear</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/catalog/supplies">School Supplies</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Link href="/schools" className="font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">
-            Schools
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Notifications" className="w-80">
+              <DropdownItem key="notification-title" className="font-semibold">
+                Notifications
+              </DropdownItem>
+              <>
+              {notifications.map((n) => (
+                <DropdownItem key={n.id} className={!n.read ? "bg-default-100" : ""}>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between">
+                      <span className="font-medium">{n.title}</span>
+                      <span className="text-xs text-default-400">{n.time}</span>
+                    </div>
+                    <p className="text-sm">{n.content}</p>
+                  </div>
+                </DropdownItem>
+              ))}
+              </>
+              <DropdownItem key="notification-actions" className="mt-2">
+                <div className="flex justify-between">
+                  <span className="text-sm">Mark all as read</span>
+                  <span className="text-sm">View all</span>
+                </div>
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly variant="light">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="User Menu">
+              <DropdownItem key="account-title" className="font-semibold">
+                My Account
+              </DropdownItem>
+              <DropdownItem key="profile" onClick={() => (window.location.href = "/profile")}>
+                <div className="flex items-center gap-2">
+                  <User size={18} />
+                  <span>My Profile</span>
+                </div>
+              </DropdownItem>
+              <DropdownItem key="orders" onClick={() => (window.location.href = "/profile/orders")}>
+                <div className="flex items-center gap-2">
+                  <ShoppingCart size={18} />
+                  <span>My Orders</span>
+                </div>
+              </DropdownItem>
+              <DropdownItem key="settings" onClick={() => (window.location.href = "/profile/settings")}>
+                <div className="flex items-center gap-2">
+                  <Settings size={18} />
+                  <span>Settings</span>
+                </div>
+              </DropdownItem>
+              <DropdownItem key="logout" className="text-danger" color="danger">
+                <div className="flex items-center gap-2">
+                  <LogOut size={18} />
+                  <span>Sign Out</span>
+                </div>
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </Authenticated>
+        <Unauthenticated>
+          <Button as={NextLink} href="/auth" color="primary" variant="flat">
+            Login
+          </Button>
+        </Unauthenticated>
+      </NavbarContent>
+
+      {/* Mobile Menu (slides in) */}
+      <NavbarMenu className="pt-4 px-4">
+        <div className="mb-6 mt-2">
+          <input
+            type="text"
+            placeholder="Search products, schools..."
+            className="w-full h-10 px-3 rounded-md border border-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
+          />
+        </div>
+        <NavbarMenuItem>
+          <Link href="/" as={NextLink} color="foreground" className="flex items-center gap-3 text-base" onClick={closeMenu}>
+            <Home className="h-5 w-5" />
+            Home
           </Link>
-          <Link href="/catalog" className="font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">
-            Catalog
+        </NavbarMenuItem>
+        {navLinks.map((link) => (
+          <NavbarMenuItem key={link.href}>
+            <Link href={link.href} as={NextLink} color="foreground" className="flex items-center gap-3 text-base" onClick={closeMenu}>
+              {link.icon}
+              {link.label}
+            </Link>
+          </NavbarMenuItem>
+        ))}
+        <NavbarMenuItem>
+          <Link href="/cart" as={NextLink} color="foreground" className="flex items-center justify-between gap-3 text-base" onClick={closeMenu}>
+            <div className="flex items-center gap-3">
+              <ShoppingBag className="h-5 w-5" />
+              Cart
+            </div>
+            {cartCount > 0 && <Badge color="primary">{cartCount}</Badge>}
           </Link>
-          <Link href="/about" className="font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">
-            About Us
-          </Link>
-          <Link href="/contact" className="font-medium transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">
-            Contact
-          </Link>
-        </nav>
-        <div className="flex items-center ml-auto gap-2">
-          {isSearchOpen ? (
-            <div className="flex items-center w-full md:w-auto absolute left-0 right-0 px-4 md:relative md:px-0 bg-background dark:bg-background z-20">
-              <SearchInput 
-                placeholder="Search products, schools..."
-                className="w-full md:w-[300px]" 
-                onSearch={handleSearch}
-                autoFocus
-                onChange={(e) => setSearchQuery(e.target.value)}
-                value={searchQuery}
-              />
-              <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)} className="ml-2">
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close search</span>
+        </NavbarMenuItem>
+        <Authenticated>
+          <NavbarMenuItem>
+            <Link href="/profile" as={NextLink} color="foreground" className="flex items-center gap-3 text-base" onClick={closeMenu}>
+              <User className="h-5 w-5" />
+              My Profile
+            </Link>
+          </NavbarMenuItem>
+          <NavbarMenuItem>
+            <Link color="danger" className="flex items-center gap-3 text-base" onClick={closeMenu}>
+              <LogOut className="h-5 w-5" />
+              Sign Out
+            </Link>
+          </NavbarMenuItem>
+        </Authenticated>
+        <Unauthenticated>
+          <NavbarMenuItem className="mt-4">
+            <Button as={NextLink} href="/auth" color="primary" variant="flat" className="w-full" size="lg" onClick={closeMenu}>
+              Login
+            </Button>
+          </NavbarMenuItem>
+        </Unauthenticated>
+        <div className="mt-6">
+          <ThemeToggle />
+        </div>
+      </NavbarMenu>
+
+      {/* Search Modal using @heroui/react Modal */}
+      <Modal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)}>
+        <ModalContent>
+          <ModalHeader>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-bold">Search</h3>
+              <Button isIconOnly variant="light" onClick={() => setIsSearchOpen(false)}>
+                <X className="h-6 w-6" />
               </Button>
             </div>
-          ) : (
-            <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
-              <Search className="h-5 w-5" />
-              <span className="sr-only">Search</span>
-            </Button>
-          )}
-          <ThemeToggle />
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="relative" 
-            onClick={() => setNotificationOpen(true)}
-          >
-            <Bell className="h-5 w-5" />
-            <span className="sr-only">Notifications</span>
-            {notificationCount > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-primary">
-                {notificationCount}
-              </Badge>
-            )}
-          </Button>
-          
-          <Dialog open={notificationOpen} onOpenChange={setNotificationOpen}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Notifications</DialogTitle>
-              </DialogHeader>
-              <div className="max-h-[60vh] overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No notifications yet</p>
-                  </div>
-                ) : (
-                  <div className="divide-y">
-                    {notifications.map((notification) => (
-                      <div 
-                        key={notification.id} 
-                        className={`py-3 px-1 ${notification.read ? '' : 'bg-muted/50'}`}
-                      >
-                        <div className="flex justify-between">
-                          <h4 className="font-medium text-sm">{notification.title}</h4>
-                          <span className="text-xs text-muted-foreground">{notification.time}</span>
-                        </div>
-                        <p className="text-sm mt-1">{notification.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <DialogFooter className="sm:justify-between">
-                <Button variant="ghost" size="sm">Mark all as read</Button>
-                <Button variant="outline" size="sm">View all</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-                <span className="sr-only">User menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5 text-sm font-medium">My Account</div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/profile" className="cursor-pointer flex items-center">
-                  <User className="mr-2 h-4 w-4" />
-                  My Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/profile/orders" className="cursor-pointer flex items-center">
-                  <ShoppingCart className="mr-2 h-4 w-4" />
-                  My Orders
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/profile/wishlist" className="cursor-pointer flex items-center">
-                  <Heart className="mr-2 h-4 w-4" />
-                  Wishlist
-                  {wishlistCount > 0 && (
-                    <Badge className="ml-auto bg-indigo-600">{wishlistCount}</Badge>
-                  )}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/profile/settings" className="cursor-pointer flex items-center">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex items-center">
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="ghost" size="icon" asChild className="relative">
-            <Link href="/cart">
-              <ShoppingBag className="h-5 w-5" />
-              <span className="sr-only">Cart</span>
-              {cartCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-primary">
-                  {cartCount}
-                </Badge>
-              )}
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </header>
-  )
+          </ModalHeader>
+          <ModalBody>
+            <input
+              type="text"
+              placeholder="Search products, schools..."
+              className="w-full h-12 px-4 rounded-md border border-input"
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={() => handleSearch(searchQuery)}>Search</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </Navbar>
+  );
 }
