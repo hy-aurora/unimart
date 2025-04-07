@@ -26,7 +26,8 @@ import {
 } from "@heroui/react";
 import { ThemeSwitcher } from "../theme-toggle";
 import { SignOutButton } from "@clerk/nextjs";
-import { Authenticated, Unauthenticated } from "convex/react";
+import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function SiteNavbar() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -50,6 +51,8 @@ export default function SiteNavbar() {
     { href: "/contact", label: "Contact Us" },
   ];
 
+  const user = useQuery(api.users.get);
+
   const userActions = [
     {
       key: "orders",
@@ -57,7 +60,12 @@ export default function SiteNavbar() {
       icon: "lucide:package",
       href: "/cart",
     },
-    { key: "profile", label: "Profile", icon: "lucide:user", href: "/profile" },
+    {
+      key: "profile",
+      label: "Profile",
+      icon: "lucide:user",
+      href: user?.role === "admin" ? "/admin" : "/profile",
+    },
   ];
 
   const cartItemCount = 3; // Example cart count
