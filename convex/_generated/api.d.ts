@@ -14,7 +14,17 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as _utils from "../_utils.js";
+import type * as adminNotifications from "../adminNotifications.js";
+import type * as carts from "../carts.js";
+import type * as contactQueries from "../contactQueries.js";
 import type * as http from "../http.js";
+import type * as logs from "../logs.js";
+import type * as notifications from "../notifications.js";
+import type * as orders from "../orders.js";
+import type * as payments from "../payments.js";
+import type * as products from "../products.js";
+import type * as schools from "../schools.js";
+import type * as todos from "../todos.js";
 import type * as user from "../user.js";
 import type * as users from "../users.js";
 
@@ -28,7 +38,17 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   _utils: typeof _utils;
+  adminNotifications: typeof adminNotifications;
+  carts: typeof carts;
+  contactQueries: typeof contactQueries;
   http: typeof http;
+  logs: typeof logs;
+  notifications: typeof notifications;
+  orders: typeof orders;
+  payments: typeof payments;
+  products: typeof products;
+  schools: typeof schools;
+  todos: typeof todos;
   user: typeof user;
   users: typeof users;
 }>;

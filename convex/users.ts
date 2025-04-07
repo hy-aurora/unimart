@@ -54,9 +54,9 @@ export const get = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
 
-    // If no identity is found, throw an unauthorized error
+    // If no identity is found, return null instead of throwing an error
     if (!identity) {
-      throw new ConvexError("Unauthorized");
+      return null;
     }
 
     // Fetch the user details from the database using Clerk ID
@@ -65,15 +65,15 @@ export const get = query({
       clerkId: identity.subject,
     });
 
-    // If the user is not found, throw a user not found error
+    // If the user is not found, return null
     if (!currentUser) {
-      throw new ConvexError("User not found");
+      return null;
     }
 
     const user = await ctx.db.get(currentUser._id);
 
     if (!user) {
-      throw new ConvexError("User not found in the database");
+      return null;
     }
 
     // Return only the fields you want
