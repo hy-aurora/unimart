@@ -95,3 +95,23 @@ export const getForCatalog = query({
       .collect();
   },
 });
+
+// Query to get a school with its products
+export const getWithProducts = query({
+  args: {
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    const school = await ctx.db.get(args.schoolId);
+    if (!school) {
+      throw new ConvexError("School not found");
+    }
+
+    const products = await ctx.db
+      .query("products")
+      .withIndex("by_schoolId", (q) => q.eq("schoolId", args.schoolId))
+      .collect();
+
+    return { ...school, products };
+  },
+});

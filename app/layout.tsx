@@ -11,7 +11,7 @@ import Provider from "@/components/Provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "UniMart | University Marketplace",
+  title: "UniMart",
   description: "Buy and sell items with other university students",
 };
 

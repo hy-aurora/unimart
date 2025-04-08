@@ -1,150 +1,156 @@
 "use client";
-import Link from "next/link";
-import Image from "next/image";
-import { useParams } from "next/navigation";
-import { ArrowLeft, Filter } from "lucide-react";
+import React from "react";
+import { Icon } from "@iconify/react";
+import { Button, Card, CardBody, Badge } from "@heroui/react";
+import { ProductCard } from "@/components/product-card";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-
-import { Button } from "@heroui/react";
-import { ProductCard } from "@/components/product-card";
 import { Id } from "@/convex/_generated/dataModel";
+import { useSearchParams } from "next/navigation";
 
 export default function SchoolPage() {
-  const params = useParams();
-  const schoolId = params.id as string;
+  const searchParams = useSearchParams();
+  const schoolId = searchParams.get("id"); // Retrieve the id from search params
 
-  const school = useQuery(api.schools.getById, {
+  if (!schoolId || schoolId.trim() === "") {
+    return <div>Error: School ID is missing or invalid.</div>; // Handle missing or invalid schoolId
+  }
+
+  const school = useQuery(api.schools.getWithProducts, {
     schoolId: schoolId as Id<"schools">,
-  }) as {
-    _id: Id<"schools">;
-    _creationTime: number;
-    name: string;
-    slug: string;
-    logoUrl: string;
-    bannerUrl: string;
-    description: string;
-    location: string;
-    createdAt: number;
-    categories?: string[]; // Added categories property
-  } | null;
-  const products = useQuery(api.products.getBySchool, {
-    schoolId: schoolId as Id<"schools">,
-  });
+  }); // Fetch school with products
+  const categories = useQuery(api.categories.getAll) || []; // Fetch categories from backend
+  const [selectedCategory, setSelectedCategory] = React.useState("all");
+  const [sortOption, setSortOption] = React.useState("popular");
+
+  const filteredProducts = React.useMemo(() => {
+    if (!school) return [];
+    let filtered = [...school.products];
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((p) => p.category === selectedCategory);
+    }
+    switch (sortOption) {
+      case "price-asc":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        break;
+    }
+    return filtered;
+  }, [school, selectedCategory, sortOption]);
 
   if (!school) {
-    return <div>Loading school details...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
-    <div className="container px-4 py-8">
-      <div className="mb-6">
-        <Link
-          href="/schools"
-          className="group flex items-center text-sm text-gray-500 hover:text-indigo-600 transition-colors"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Back to Schools
-        </Link>
-      </div>
-
-      <div className="relative w-full h-[220px] md:h-[320px] rounded-xl overflow-hidden mb-10 shadow-md">
-        <Image
-          src={school.bannerUrl || "/placeholder.svg"}
+    <div className="min-h-screen">
+      <div className="relative h-[320px] overflow-hidden">
+        <img
+          src={school.bannerUrl}
           alt={school.name}
-          fill
-          className="object-cover"
-          priority
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="flex justify-center mb-4">
-              <div className="bg-white rounded-full p-2 w-24 h-24 flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform">
-                <Image
-                  src={school.logoUrl || "/placeholder.svg"}
-                  alt={school.name}
-                  width={70}
-                  height={70}
-                  className="object-contain"
-                />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20" />
+        <div className="absolute bottom-0 left-0 right-0 p-8">
+          <div className="container mx-auto flex items-end gap-6">
+            <div className="bg-white rounded-xl p-2 shadow-lg">
+              <img
+                src={school.logoUrl}
+                alt={school.name}
+                className="w-24 h-24 object-contain"
+              />
+            </div>
+            <div className="text-white flex-1">
+              <h1 className="text-3xl font-bold mb-2">{school.name}</h1>
+              <div className="flex gap-4">
+                <Badge variant="flat" color="secondary" className="gap-1">
+                  <Icon icon="lucide:map-pin" />
+                  {school.location}
+                </Badge>
               </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold">{school.name}</h1>
           </div>
         </div>
       </div>
 
-      <div className="mb-10 bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-xl">
-        <h2 className="text-2xl font-bold mb-4 text-indigo-900 dark:text-indigo-400">
-          About the School Uniform
-        </h2>
-        <p className="text-indigo-700/80 dark:text-indigo-300/80">
-          {school.description}
-        </p>
-      </div>
+      <div className="container mx-auto px-4 py-8">
+        <Card className="mb-8">
+          <CardBody>
+            <h2 className="text-xl font-bold mb-4">About the School Uniform</h2>
+            <p className="text-default-600">{school.description}</p>
+          </CardBody>
+        </Card>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="md:w-1/4">
-          <div className="sticky top-20 bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-indigo-900 dark:text-indigo-400">
-                Categories
-              </h3>
-              <Button variant="ghost" size="sm" className="md:hidden">
-                <Filter className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-            </div>
-            <div className="space-y-1">
-              <Button
-                variant="ghost"
-                className="w-full justify-start font-normal hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/50"
-              >
-                All Items
-              </Button>
-              {school.categories?.map((category) => (
+        <div className="flex flex-col lg:flex-row gap-8">
+          <Card className="lg:w-64 h-fit">
+            <CardBody>
+              <h3 className="font-bold mb-4">Categories</h3>
+              <div className="space-y-1">
                 <Button
-                  key={category}
-                  variant="ghost"
-                  className="w-full justify-start font-normal hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/50"
+                  fullWidth
+                  variant={selectedCategory === "all" ? "solid" : "light"}
+                  color={selectedCategory === "all" ? "primary" : "default"}
+                  onPress={() => setSelectedCategory("all")}
+                  className="justify-start"
                 >
-                  {category}
+                  All Items
                 </Button>
+                {categories.map((category) => (
+                  <Button
+                    key={category.name}
+                    fullWidth
+                    variant={
+                      selectedCategory === category.name ? "solid" : "light"
+                    }
+                    color={
+                      selectedCategory === category.name ? "primary" : "default"
+                    }
+                    onPress={() => setSelectedCategory(category.name)}
+                    className="justify-start"
+                  >
+                    {category.name}
+                  </Button>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+
+          <div className="flex-1">
+            <Card className="mb-6">
+              <CardBody className="flex justify-between items-center">
+                <h2 className="text-xl font-bold">
+                  {selectedCategory === "all"
+                    ? "All Products"
+                    : selectedCategory}
+                </h2>
+                <select
+                  className="border rounded-lg px-3 py-2"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                >
+                  <option value="popular">Most Popular</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                </select>
+              </CardBody>
+            </Card>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    ...product,
+                    school: school.name,
+                    image: product.imageUrls[0] || "",
+                  }}
+                />
               ))}
             </div>
-          </div>
-        </div>
-
-        <div className="md:w-3/4">
-          <div className="flex justify-between items-center mb-6 bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
-            <h2 className="text-2xl font-bold text-indigo-900 dark:text-indigo-400">
-              Products
-            </h2>
-            <div className="flex items-center">
-              <span className="text-sm text-gray-500 mr-2">Sort by:</span>
-              <select className="text-sm border rounded-lg p-2 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option>Popularity</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Newest</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products?.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={{
-                  id: product._id,
-                  name: product.name,
-                  price: product.price,
-                  image: product.imageUrls[0] || "/placeholder.svg",
-                  inStock: product.stock > 0,
-                  school: school.name,
-                }}
-              />
-            ))}
           </div>
         </div>
       </div>

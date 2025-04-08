@@ -1,14 +1,47 @@
 "use client";
-import Link from "next/link";
-import Image from "next/image";
-import { Search } from "lucide-react";
+import React from "react";
+import { Icon } from "@iconify/react";
+import {
+  Input,
+  Select,
+  SelectItem,
+  Card,
+  CardBody,
+  Button,
+  Badge,
+} from "@heroui/react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
-import { Button, Input } from "@heroui/react";
+interface School {
+  _id: string;
+  name: string;
+  logoUrl: string;
+  location: string;
+  studentCount?: number;
+  uniformCount?: number;
+}
 
 export default function SchoolsPage() {
-  const schools = useQuery(api.schools.getAll);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedCity, setSelectedCity] = React.useState("");
+
+  const schools = useQuery(api.schools.getAll) || []; // Fetch schools using useQuery
+
+  const cities = React.useMemo(
+    () => Array.from(new Set(schools.map((school) => school.location))),
+    [schools]
+  );
+
+  const filteredSchools = React.useMemo(() => {
+    return schools.filter((school) => {
+      const matchesSearch =
+        school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        school.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCity = !selectedCity || school.location === selectedCity;
+      return matchesSearch && matchesCity;
+    });
+  }, [schools, searchQuery, selectedCity]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -19,63 +52,89 @@ export default function SchoolsPage() {
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 mb-10 bg-default-100 p-5 rounded-xl shadow-sm border border-default-200">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-default-400" />
-          <Input placeholder="Search by school name" className="pl-10" />
-        </div>
-        <div className="w-full lg:w-48">
-          <select className="w-full h-10 px-3 rounded-md border border-default-200 bg-default-100 focus:outline-none focus:ring-2 focus:ring-primary">
-            <option value="">All Cities</option>
-            {/* Add city filtering dynamically if needed */}
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {schools?.map((school) => (
-          <Link
-            key={school._id}
-            href={`/schools/${school._id}`}
-            className="group"
+      <Card className="mb-10">
+        <CardBody className="flex flex-col lg:flex-row gap-4">
+          <Input
+            placeholder="Search schools..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            startContent={
+              <Icon icon="lucide:search" className="text-default-400" />
+            }
+            className="flex-1"
+          />
+          <Select
+            placeholder="All Cities"
+            selectedKeys={selectedCity ? [selectedCity] : []}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="w-full lg:w-48"
           >
-            <div className="flex flex-col border rounded-xl overflow-hidden transition-all hover:shadow-md bg-default-100 border-default-200">
-              <div className="relative w-full aspect-square overflow-hidden">
-                <Image
-                  src={school.logoUrl || "/placeholder.svg"}
+            <SelectItem key="">All Cities</SelectItem>
+            <>
+              {cities.map((city) => (
+                <SelectItem key={city}>{city}</SelectItem>
+              ))}
+            </>
+          </Select>
+        </CardBody>
+      </Card>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {filteredSchools.map((school) => (
+          <Card
+            key={school._id}
+            isPressable
+            isHoverable
+            className="border-none"
+            as="a"
+            href={`/schools/${school._id}`}
+          >
+            <CardBody className="p-0">
+              <div className="relative aspect-square overflow-hidden rounded-t-lg">
+                <img
+                  src={school.logoUrl}
                   alt={school.name}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               </div>
-              <div className="p-5">
-                <h3 className="font-bold text-lg text-default-900 group-hover:text-primary transition-colors">
+              <div className="p-4 space-y-2">
+                <h3 className="font-bold text-lg group-hover:text-primary transition-colors">
                   {school.name}
                 </h3>
-                <p className="text-sm text-default-500 flex items-center mt-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mr-1"
-                  >
-                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
+                <p className="text-sm text-default-500 flex items-center">
+                  <Icon icon="lucide:map-pin" className="mr-1 h-4 w-4" />
                   {school.location}
                 </p>
               </div>
-            </div>
-          </Link>
+            </CardBody>
+          </Card>
         ))}
       </div>
+
+      {filteredSchools.length === 0 && (
+        <div className="text-center py-12">
+          <Icon
+            icon="lucide:school"
+            className="mx-auto h-16 w-16 text-default-300"
+          />
+          <h3 className="mt-4 text-lg font-semibold">No schools found</h3>
+          <p className="mt-2 text-default-500">
+            Try adjusting your search or filter criteria
+          </p>
+          <Button
+            color="primary"
+            variant="light"
+            className="mt-4"
+            onPress={() => {
+              setSearchQuery("");
+              setSelectedCity("");
+            }}
+          >
+            Clear filters
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

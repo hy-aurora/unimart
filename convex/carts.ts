@@ -106,7 +106,7 @@ export const updateItem = mutation({
   },
 });
 
-// Mutation to remove an item from the cart
+// Mutation to remove an item robustly
 export const removeItem = mutation({
   args: {
     productId: v.id("products"),
@@ -155,7 +155,7 @@ export const clearCart = mutation({
     if (!identity) {
       throw new ConvexError("Unauthorized");
     }
-    
+
     const user = await ctx.db
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
@@ -180,10 +180,10 @@ export const clearCart = mutation({
     });
 
     return { success: true };
-  }
+  },
 });
 
-// Query to get the cart for a user
+// Query to get the cart with product details
 export const getCart = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -205,6 +205,22 @@ export const getCart = query({
       .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .unique();
 
-    return cart || { items: [] };
-  }
+    if (!cart) {
+      return { items: [] };
+    }
+
+    const detailedItems = await Promise.all(
+      cart.items.map(async (item) => {
+        const product = await ctx.db.get(item.productId);
+        return {
+          ...item,
+          name: product?.name || "Unknown Product",
+          price: product?.price || 0,
+          image: product?.imageUrls?.[0] || "/images/placeholder.webp",
+        };
+      })
+    );
+
+    return { items: detailedItems };
+  },
 });

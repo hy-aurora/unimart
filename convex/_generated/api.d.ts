@@ -16,6 +16,7 @@ import type {
 import type * as _utils from "../_utils.js";
 import type * as adminNotifications from "../adminNotifications.js";
 import type * as carts from "../carts.js";
+import type * as categories from "../categories.js";
 import type * as contactQueries from "../contactQueries.js";
 import type * as http from "../http.js";
 import type * as logs from "../logs.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   _utils: typeof _utils;
   adminNotifications: typeof adminNotifications;
   carts: typeof carts;
+  categories: typeof categories;
   contactQueries: typeof contactQueries;
   http: typeof http;
   logs: typeof logs;

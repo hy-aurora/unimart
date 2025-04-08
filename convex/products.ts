@@ -121,3 +121,21 @@ export const getProductById = query({
     return await ctx.db.get(args.productId);
   },
 });
+
+// Query to get products grouped by schools
+export const getGroupedBySchool = query({
+  args: {},
+  handler: async (ctx) => {
+    const products = await ctx.db.query("products").collect();
+    const grouped = products.reduce<Record<string, typeof products>>((acc, product) => {
+      const schoolId = product.schoolId.toString();
+      if (!acc[schoolId]) {
+        acc[schoolId] = [];
+      }
+      acc[schoolId].push(product);
+      return acc;
+    }, {});
+
+    return grouped;
+  },
+});

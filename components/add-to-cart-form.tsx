@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Heart, Minus, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
-import { Id } from '../convex/_generated/dataModel';
+import { Id } from "../convex/_generated/dataModel";
 
 interface Product {
   id: string;
@@ -34,7 +34,14 @@ interface Product {
   school: string;
 }
 
-const classOptions = ["Class 1", "Class 2", "Class 3", "Year 1", "Year 2", "Year 3"];
+const classOptions = [
+  "Class 1",
+  "Class 2",
+  "Class 3",
+  "Year 1",
+  "Year 2",
+  "Year 3",
+];
 
 export function AddToCartForm({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
@@ -85,6 +92,8 @@ export function AddToCartForm({ product }: { product: Product }) {
     }
   };
 
+  const categories = useQuery(api.categories.getAllCategories);
+
   return (
     <div className="space-y-6">
       <div>
@@ -102,6 +111,24 @@ export function AddToCartForm({ product }: { product: Product }) {
             {classOptions.map((classOption) => (
               <SelectItem key={classOption} value={classOption}>
                 {classOption}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="category" className="text-base font-medium">
+          Select Category
+        </Label>
+        <Select value={selectedClass} onValueChange={setSelectedClass}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories?.map((category) => (
+              <SelectItem key={category._id} value={category.name}>
+                {category.name}
               </SelectItem>
             ))}
           </SelectContent>

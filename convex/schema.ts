@@ -46,12 +46,11 @@ export default defineSchema({
     isFeatured: v.optional(v.boolean()),
     isSale: v.optional(v.boolean()),
     category: v.optional(v.string()),
-    school: v.optional(v.string()),
-    description: v.string(), // Added this field
+    schoolId: v.id("schools"),
+    description: v.string(),
     sizes: v.array(v.string()),
     gender: v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex")),
     classLevel: v.string(),
-    schoolId: v.id("schools"),
     stock: v.number(),
     allowCustomSize: v.boolean(),
     createdAt: v.number(),
@@ -203,4 +202,11 @@ export default defineSchema({
     phone: v.optional(v.string()),
     createdAt: v.number(),
   }),
+
+  // Categories Table
+  categories: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_name", ["name"]),
 });
