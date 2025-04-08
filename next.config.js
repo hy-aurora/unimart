@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true
+  images: {
+    domains: [], // Allow all hosts
+    remotePatterns: [], // Clear any specific patterns
+  },
 };
 
 module.exports = nextConfig;

@@ -4,10 +4,20 @@ import { mutation, query } from "./_generated/server";
 // Mutation to add a new product
 export const add = mutation({
   args: {
+    id: v.string(),
     name: v.string(),
-    description: v.string(),
     price: v.number(),
+    originalPrice: v.optional(v.number()),
     imageUrls: v.array(v.string()),
+    rating: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
+    inStock: v.optional(v.boolean()),
+    isNew: v.optional(v.boolean()),
+    isFeatured: v.optional(v.boolean()),
+    isSale: v.optional(v.boolean()),
+    category: v.optional(v.string()),
+    school: v.optional(v.string()),
+    description: v.string(),
     sizes: v.array(v.string()),
     gender: v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex")),
     classLevel: v.string(),
@@ -31,10 +41,20 @@ export const add = mutation({
 export const modify = mutation({
   args: {
     productId: v.id("products"),
+    id: v.optional(v.string()),
     name: v.optional(v.string()),
-    description: v.optional(v.string()),
     price: v.optional(v.number()),
+    originalPrice: v.optional(v.number()),
     imageUrls: v.optional(v.array(v.string())),
+    rating: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
+    inStock: v.optional(v.boolean()),
+    isNew: v.optional(v.boolean()),
+    isFeatured: v.optional(v.boolean()),
+    isSale: v.optional(v.boolean()),
+    category: v.optional(v.string()),
+    school: v.optional(v.string()),
+    description: v.optional(v.string()),
     sizes: v.optional(v.array(v.string())),
     gender: v.optional(
       v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex"))
@@ -76,5 +96,18 @@ export const getAll = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("products").collect();
+  },
+});
+
+// Query to get products by school ID
+export const getBySchool = query({
+  args: {
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("products")
+      .withIndex("by_schoolId", (q) => q.eq("schoolId", args.schoolId))
+      .collect();
   },
 });

@@ -27,22 +27,37 @@ export default defineSchema({
     description: v.string(),
     location: v.string(),
     createdAt: v.number(),
-  }).index("by_slug", ["slug"]),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_name", ["name"])
+    .index("by_createdAt", ["createdAt"]),
 
   // Products Table
   products: defineTable({
+    id: v.string(),
     name: v.string(),
-    description: v.string(),
     price: v.number(),
+    originalPrice: v.optional(v.number()),
     imageUrls: v.array(v.string()),
+    rating: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
+    inStock: v.optional(v.boolean()),
+    isNew: v.optional(v.boolean()),
+    isFeatured: v.optional(v.boolean()),
+    isSale: v.optional(v.boolean()),
+    category: v.optional(v.string()),
+    school: v.optional(v.string()),
     sizes: v.array(v.string()),
     gender: v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex")),
     classLevel: v.string(),
     schoolId: v.id("schools"),
     stock: v.number(),
-    allowCustomSize: v.boolean(), // ✅ Added
+    allowCustomSize: v.boolean(),
     createdAt: v.number(),
-  }).index("by_schoolId", ["schoolId"]),
+  })
+    .index("by_schoolId", ["schoolId"])
+    .index("by_price", ["price"])
+    .index("by_createdAt", ["createdAt"]),
 
   // Cart Table
   carts: defineTable({

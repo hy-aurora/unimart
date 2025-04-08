@@ -66,6 +66,20 @@ export const remove = mutation({
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("schools").collect();
+    return await ctx.db
+      .query("schools")
+      .withIndex("by_createdAt") // ✅ Sort schools by creation date
+      .order("desc") // ✅ Order by newest first
+      .collect();
+  },
+});
+
+// Query to get a school by ID
+export const getById = query({
+  args: {
+    schoolId: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.schoolId);
   },
 });
