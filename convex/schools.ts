@@ -1,5 +1,5 @@
 import { v, ConvexError } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 // Mutation to add a new school
 export const add = mutation({
@@ -7,6 +7,7 @@ export const add = mutation({
     name: v.string(),
     slug: v.string(),
     logoUrl: v.string(),
+    bannerUrl: v.string(),
     description: v.string(),
     location: v.string(),
     createdAt: v.number(),
@@ -29,6 +30,7 @@ export const update = mutation({
     name: v.optional(v.string()),
     slug: v.optional(v.string()),
     logoUrl: v.optional(v.string()),
+    bannerUrl: v.optional(v.string()),
     description: v.optional(v.string()),
     location: v.optional(v.string()),
   },
@@ -57,5 +59,13 @@ export const remove = mutation({
 
     await ctx.db.delete(args.schoolId);
     return { success: true };
+  },
+});
+
+// Query to get all schools
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("schools").collect();
   },
 });

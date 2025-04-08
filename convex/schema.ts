@@ -23,6 +23,7 @@ export default defineSchema({
     name: v.string(),
     slug: v.string(),
     logoUrl: v.string(),
+    bannerUrl: v.string(),
     description: v.string(),
     location: v.string(),
     createdAt: v.number(),
