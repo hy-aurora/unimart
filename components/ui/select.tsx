@@ -24,7 +24,7 @@ const SelectTrigger = React.forwardRef<
     )}
     {...props}
   >
-    <React.Fragment>{children}</React.Fragment>
+    {children}
     <SelectPrimitive.Icon asChild>
       <ChevronDown className="h-4 w-4 opacity-50" />
     </SelectPrimitive.Icon>
