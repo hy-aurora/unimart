@@ -1,5 +1,5 @@
 import { v, ConvexError } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 // Mutation to create a new payment
 export const create = mutation({
@@ -46,5 +46,13 @@ export const updateStatus = mutation({
 
     await ctx.db.patch(args.paymentId, { status: args.status });
     return { success: true };
+  },
+});
+
+// Query to get all payments
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("payments").collect();
   },
 });

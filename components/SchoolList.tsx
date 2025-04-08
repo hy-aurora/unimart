@@ -55,7 +55,7 @@ export default function SchoolList() {
         createdAt: Date.now(),
       });
 
-      onOpenChange(false); // Close the modal after successful push
+      onOpenChange(); // Close the modal after successful push
     } catch (err) {
       setError("Failed to add school. Please try again.");
     }

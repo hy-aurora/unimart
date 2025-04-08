@@ -1,5 +1,5 @@
 import { v, ConvexError } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 // Mutation to add a new product
 export const add = mutation({
@@ -68,5 +68,13 @@ export const remove = mutation({
 
     await ctx.db.delete(args.productId);
     return { success: true };
+  },
+});
+
+// Query to get all products
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("products").collect();
   },
 });

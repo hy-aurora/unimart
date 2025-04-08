@@ -106,3 +106,12 @@ export const getUserOrders = query({
     return orders;
   },
 });
+
+// Query to get all orders
+export const getAllOrders = query({
+  args: {},
+  handler: async (ctx) => {
+    const orders = await ctx.db.query("orders").collect();
+    return orders;
+  },
+});

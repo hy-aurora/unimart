@@ -1,5 +1,5 @@
 import { v, ConvexError } from "convex/values";
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 
 // Mutation to add an item to the cart
 export const addItem = mutation({
@@ -146,4 +146,65 @@ export const removeItem = mutation({
 
     return { success: true };
   },
+});
+
+// Mutation to clear the cart
+export const clearCart = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+    
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const cart = await ctx.db
+      .query("carts")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .unique();
+
+    if (!cart) {
+      throw new ConvexError("Cart not found");
+    }
+
+    await ctx.db.patch(cart._id, {
+      items: [],
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  }
+});
+
+// Query to get the cart for a user
+export const getCart = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const cart = await ctx.db
+      .query("carts")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .unique();
+
+    return cart || { items: [] };
+  }
 });
