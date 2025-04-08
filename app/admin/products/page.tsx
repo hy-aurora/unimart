@@ -1,26 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { 
-  PlusCircle, 
-  Search, 
-  Filter, 
-  ArrowUpDown, 
+import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import {
+  PlusCircle,
+  Search,
+  Filter,
+  ArrowUpDown,
   MoreHorizontal,
   Pencil,
   Trash2,
-  Eye
-} from "lucide-react"
-import { AdminLayout } from "@/components/admin-layout"
-import { Button } from "@/components/ui/button"
+  Eye,
+  Upload,
+} from "lucide-react";
+import { AdminLayout } from "@/components/admin-layout";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -28,133 +31,145 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-
-// Mock product data
-const productData = [
-  {
-    id: "PROD-1001",
-    name: "School Uniform Shirt",
-    category: "Uniform",
-    price: 24.99,
-    stock: 120,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-1002",
-    name: "School Blazer",
-    category: "Uniform",
-    price: 49.99,
-    stock: 85,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-1003",
-    name: "PE Kit Shirt",
-    category: "Sports",
-    price: 19.99,
-    stock: 65,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-1004",
-    name: "School Pants",
-    category: "Uniform",
-    price: 29.99,
-    stock: 95,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-1005",
-    name: "School Skirt",
-    category: "Uniform",
-    price: 27.99,
-    stock: 78,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-1006",
-    name: "School Tie",
-    category: "Accessories",
-    price: 12.99,
-    stock: 150,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-1007",
-    name: "School Jumper",
-    category: "Uniform",
-    price: 34.99,
-    stock: 5,
-    status: "Low Stock",
-  },
-  {
-    id: "PROD-1008",
-    name: "PE Kit Shorts",
-    category: "Sports",
-    price: 17.99,
-    stock: 0,
-    status: "Out of Stock",
-  },
-  {
-    id: "PROD-1009",
-    name: "School Socks (Pack of 5)",
-    category: "Accessories",
-    price: 9.99,
-    stock: 200,
-    status: "In Stock",
-  },
-  {
-    id: "PROD-1010",
-    name: "School Backpack",
-    category: "Accessories",
-    price: 39.99,
-    stock: 45,
-    status: "In Stock",
-  },
-]
-
-// Product categories for filtering
-const categories = [
-  { id: "all", label: "All Categories" },
-  { id: "uniform", label: "Uniform" },
-  { id: "sports", label: "Sports" },
-  { id: "accessories", label: "Accessories" },
-]
+} from "@/components/ui/dropdown-menu";
+import { GenericId } from "convex/values";
 
 export default function ProductsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  
-  // Filter products based on search query and category
-  const filteredProducts = productData.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.id.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesCategory = selectedCategory === "all" || 
-      product.category.toLowerCase() === selectedCategory.toLowerCase()
-    
-    return matchesSearch && matchesCategory
-  })
+  const products = useQuery(api.products.getAll) || [];
+  const schools = useQuery(api.schools.getAll) || [];
+  const addProduct = useMutation(api.products.add);
+  const updateProduct = useMutation(api.products.modify);
+  const deleteProduct = useMutation(api.products.remove);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState<null | typeof products[0]>(null);
+  const [formState, setFormState] = useState({
+    name: "",
+    price: "",
+    category: "",
+    stock: "",
+    description: "",
+    image: null,
+    schoolId: "", // Initialize schoolId in formState
+  });
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const handleInputChange = (e: { target: { name: any; value: any } }) => {
+    const { name, value } = e.target;
+    setFormState((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddProduct = async () => {
+    let imageUrls: string[] = [];
+    if (selectedImage) {
+      imageUrls = [selectedImage]; // Use the selected image directly
+    }
+
+    await addProduct({
+      id: "", // Example default value
+      name: formState.name,
+      price: parseFloat(formState.price),
+      originalPrice: parseFloat(formState.price), // Example default value
+      imageUrls, // Use the selected image
+      rating: 0, // Example default value
+      ratingCount: 0, // Example default value
+      inStock: true, // Example default value
+      isNew: true, // Example default value
+      isFeatured: false, // Example default value
+      isSale: false, // Example default value
+      category: formState.category,
+      school: "", // Example default value
+      description: formState.description,
+      sizes: [], // Example default value
+      gender: "unisex", // Example default value
+      classLevel: "", // Example default value
+      schoolId: formState.schoolId as GenericId<"schools">, // Convert to the correct type
+      stock: parseInt(formState.stock, 10),
+      allowCustomSize: false, // Example default value
+      createdAt: Date.now(),
+    });
+
+    setFormState({
+      name: "",
+      price: "",
+      category: "",
+      stock: "",
+      description: "",
+      image: null,
+      schoolId: "", // Reset schoolId
+    });
+    setSelectedImage(null);
+  };
+
+  const handleUpdateProduct = async () => {
+    let imageUrls: string[] = [];
+    if (selectedImage) {
+      imageUrls = [selectedImage]; // Use the selected image directly
+    }
+
+    const updates = {
+      productId: selectedProduct?._id as GenericId<"products">,
+      name: formState.name,
+      price: parseFloat(formState.price),
+      category: formState.category,
+      stock: parseInt(formState.stock, 10),
+      description: formState.description,
+      imageUrls, // Use the selected image
+    };
+
+    if (updates.productId) {
+      await updateProduct(updates);
+    } else {
+      console.error("Invalid productId");
+    }
+    setSelectedProduct(null);
+    setFormState({
+      name: "",
+      price: "",
+      category: "",
+      stock: "",
+      description: "",
+      image: null,
+      schoolId: "", // Reset schoolId
+    });
+    setSelectedImage(null);
+  };
+
+  const handleDeleteProduct = async (productId: GenericId<"products">) => {
+    await deleteProduct({ productId });
+  };
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <AdminLayout>
@@ -170,58 +185,131 @@ export default function ProductsPage() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Add New Product</DialogTitle>
+                <DialogTitle>
+                  {selectedProduct ? "Edit Product" : "Add Product"}
+                </DialogTitle>
                 <DialogDescription>
-                  Fill in the details to add a new product to your inventory.
+                  {selectedProduct
+                    ? "Update the product details."
+                    : "Fill in the details to add a new product."}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-name" className="sm:text-right">
+                  <Label htmlFor="name" className="sm:text-right">
                     Name
                   </Label>
-                  <Input id="product-name" className="col-span-1 sm:col-span-3" placeholder="Product name" />
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formState.name}
+                    onChange={handleInputChange}
+                    className="col-span-1 sm:col-span-3"
+                    placeholder="Product name"
+                  />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-category" className="sm:text-right">
-                    Category
-                  </Label>
-                  <Input id="product-category" className="col-span-1 sm:col-span-3" placeholder="Category" />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-price" className="sm:text-right">
+                  <Label htmlFor="price" className="sm:text-right">
                     Price (£)
                   </Label>
-                  <Input id="product-price" type="number" className="col-span-1 sm:col-span-3" placeholder="0.00" />
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    value={formState.price}
+                    onChange={handleInputChange}
+                    className="col-span-1 sm:col-span-3"
+                    placeholder="0.00"
+                  />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product-stock" className="sm:text-right">
+                  <Label htmlFor="category" className="sm:text-right">
+                    Category
+                  </Label>
+                  <Input
+                    id="category"
+                    name="category"
+                    value={formState.category}
+                    onChange={handleInputChange}
+                    className="col-span-1 sm:col-span-3"
+                    placeholder="Category"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                  <Label htmlFor="stock" className="sm:text-right">
                     Stock
                   </Label>
-                  <Input id="product-stock" type="number" className="col-span-1 sm:col-span-3" placeholder="0" />
+                  <Input
+                    id="stock"
+                    name="stock"
+                    type="number"
+                    value={formState.stock}
+                    onChange={handleInputChange}
+                    className="col-span-1 sm:col-span-3"
+                    placeholder="0"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                  <Label htmlFor="school" className="sm:text-right">
+                    School
+                  </Label>
+                  <select
+                    id="school"
+                    name="schoolId"
+                    value={formState.schoolId}
+                    onChange={handleInputChange}
+                    className="col-span-1 sm:col-span-3 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select a school</option>
+                    {schools.map((school) => (
+                      <option key={school._id} value={school._id}>
+                        {school.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
-                  <Label htmlFor="product-description" className="sm:text-right pt-2">
+                  <Label htmlFor="description" className="sm:text-right pt-2">
                     Description
                   </Label>
-                  <textarea 
-                    id="product-description" 
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={formState.description}
+                    onChange={handleInputChange}
                     className="col-span-1 sm:col-span-3 min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
                     placeholder="Product description"
                   ></textarea>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <div className="sm:text-right">
-                    <Label>Status</Label>
-                  </div>
-                  <div className="col-span-1 sm:col-span-3 flex items-center space-x-2">
-                    <Checkbox id="product-active" defaultChecked />
-                    <Label htmlFor="product-active">Active</Label>
+                  <Label htmlFor="image" className="sm:text-right">
+                    Image
+                  </Label>
+                  <div className="col-span-1 sm:col-span-3">
+                    <Input
+                      id="image"
+                      type="file"
+                      onChange={handleImageUpload}
+                    />
+                    {selectedImage && (
+                      <img
+                        src={selectedImage}
+                        alt="Preview"
+                        className="mt-2 h-24 w-24 object-cover rounded-md"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
               <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                <Button type="submit" className="w-full sm:w-auto">Save Product</Button>
+                <Button
+                  onClick={
+                    selectedProduct ? handleUpdateProduct : handleAddProduct
+                  }
+                  className="w-full sm:w-auto"
+                >
+                  {selectedProduct ? "Update Product" : "Save Product"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -232,7 +320,7 @@ export default function ProductsPage() {
             <CardHeader>
               <CardTitle>Product Inventory</CardTitle>
               <CardDescription>
-                Manage your product catalog and inventory levels
+                Manage your product catalog and inventory levels.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -248,92 +336,55 @@ export default function ProductsPage() {
                     <Search className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="w-full sm:w-auto">
-                        <Filter className="mr-2 h-4 w-4" />
-                        Filter
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {categories.map((category) => (
-                        <DropdownMenuItem 
-                          key={category.id}
-                          onClick={() => setSelectedCategory(category.id)}
-                          className={selectedCategory === category.id ? "bg-muted" : ""}
-                        >
-                          {category.label}
-                        </DropdownMenuItem>
-                      ))}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>In Stock</DropdownMenuItem>
-                      <DropdownMenuItem>Low Stock</DropdownMenuItem>
-                      <DropdownMenuItem>Out of Stock</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button variant="outline" className="w-full sm:w-auto">
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                    Sort
-                  </Button>
-                </div>
               </div>
 
               <div className="rounded-md border overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-nowrap">Product ID</TableHead>
-                      <TableHead className="whitespace-nowrap">Name</TableHead>
-                      <TableHead className="whitespace-nowrap">Category</TableHead>
-                      <TableHead className="whitespace-nowrap">Price</TableHead>
-                      <TableHead className="whitespace-nowrap">Stock</TableHead>
-                      <TableHead className="whitespace-nowrap">Status</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredProducts.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-medium">{product.id}</TableCell>
+                      <TableRow key={product._id}>
                         <TableCell>{product.name}</TableCell>
                         <TableCell>{product.category}</TableCell>
                         <TableCell>£{product.price.toFixed(2)}</TableCell>
                         <TableCell>{product.stock}</TableCell>
-                        <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            product.status === "In Stock" 
-                              ? "bg-green-100 text-green-800" 
-                              : product.status === "Low Stock"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                          }`}>
-                            {product.status}
-                          </span>
-                        </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
                                 <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Open menu</span>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedProduct(product);
+                                  setFormState({
+                                      name: product.name,
+                                      price: product.price.toString(),
+                                      category: product.category || "",
+                                      stock: product.stock.toString(),
+                                      description: "description" in product ? (product.description as string) : "", // Ensure description is optional
+                                      image: null,
+                                      schoolId: product.schoolId || "", // Add schoolId
+                                  });
+                                }}
+                              >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600">
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteProduct(product._id)}
+                                className="text-red-600"
+                              >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
                               </DropdownMenuItem>
@@ -345,19 +396,10 @@ export default function ProductsPage() {
                   </TableBody>
                 </Table>
               </div>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-end space-x-0 sm:space-x-2 space-y-2 sm:space-y-0 py-4">
-                <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                  Next
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>
       </div>
     </AdminLayout>
-  )
+  );
 }

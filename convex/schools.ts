@@ -83,3 +83,15 @@ export const getById = query({
     return await ctx.db.get(args.schoolId);
   },
 });
+
+// Query to get schools for the catalog
+export const getForCatalog = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("schools")
+      .withIndex("by_createdAt") // Sort schools by creation date
+      .order("desc") // Order by newest first
+      .collect();
+  },
+});

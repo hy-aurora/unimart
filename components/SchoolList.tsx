@@ -57,6 +57,25 @@ export default function SchoolList() {
   const deleteSchool = useMutation(api.schools.remove);
   const schools = useQuery(api.schools.getAll) as School[] | undefined;
 
+  const [selectedLogo, setSelectedLogo] = React.useState<string | null>(null);
+  const [selectedBanner, setSelectedBanner] = React.useState<string | null>(
+    null
+  );
+
+  const handleImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setImage: React.Dispatch<React.SetStateAction<string | null>>
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -68,13 +87,15 @@ export default function SchoolList() {
       await addSchool({
         name: data.name as string,
         slug: data.slug as string,
-        logoUrl: data.logoUrl as string,
-        bannerUrl: data.bannerUrl as string,
+        logoUrl: selectedLogo || "", // Use uploaded logo
+        bannerUrl: selectedBanner || "", // Use uploaded banner
         description: data.description as string,
         location: data.location as string,
         createdAt: Date.now(),
       });
 
+      setSelectedLogo(null);
+      setSelectedBanner(null);
       onAddOpenChange(); // Close the modal after successful addition
     } catch (err) {
       setError("Failed to add school. Please try again.");
@@ -94,12 +115,14 @@ export default function SchoolList() {
           schoolId: selectedSchool._id as Id<"schools">,
           name: data.name as string,
           slug: data.slug as string,
-          logoUrl: data.logoUrl as string,
-          bannerUrl: data.bannerUrl as string,
+          logoUrl: selectedLogo || selectedSchool.logoUrl, // Use uploaded or existing logo
+          bannerUrl: selectedBanner || selectedSchool.bannerUrl, // Use uploaded or existing banner
           description: data.description as string,
           location: data.location as string,
         });
 
+        setSelectedLogo(null);
+        setSelectedBanner(null);
         onEditOpenChange(); // Close the modal after successful update
       }
     } catch (err) {
@@ -206,20 +229,40 @@ export default function SchoolList() {
                     placeholder="Enter school slug"
                     variant="bordered"
                   />
-                  <Input
-                    isRequired
-                    label="Logo URL"
-                    name="logoUrl"
-                    placeholder="Enter logo URL"
-                    variant="bordered"
-                  />
-                  <Input
-                    isRequired
-                    label="Banner URL"
-                    name="bannerUrl"
-                    placeholder="Enter banner URL"
-                    variant="bordered"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Logo
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleImageUpload(e, setSelectedLogo)}
+                      className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
+                    />
+                    {selectedLogo && (
+                      <img
+                        src={selectedLogo}
+                        alt="Logo Preview"
+                        className="mt-2 h-24 w-24 object-cover rounded-md"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Banner
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleImageUpload(e, setSelectedBanner)}
+                      className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
+                    />
+                    {selectedBanner && (
+                      <img
+                        src={selectedBanner}
+                        alt="Banner Preview"
+                        className="mt-2 h-24 w-full object-cover rounded-md"
+                      />
+                    )}
+                  </div>
                   <Input
                     isRequired
                     label="Description"
@@ -278,22 +321,56 @@ export default function SchoolList() {
                     placeholder="Enter school slug"
                     variant="bordered"
                   />
-                  <Input
-                    isRequired
-                    label="Logo URL"
-                    name="logoUrl"
-                    defaultValue={selectedSchool?.logoUrl}
-                    placeholder="Enter logo URL"
-                    variant="bordered"
-                  />
-                  <Input
-                    isRequired
-                    label="Banner URL"
-                    name="bannerUrl"
-                    defaultValue={selectedSchool?.bannerUrl}
-                    placeholder="Enter banner URL"
-                    variant="bordered"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Logo
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleImageUpload(e, setSelectedLogo)}
+                      className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
+                    />
+                    {selectedLogo ? (
+                      <img
+                        src={selectedLogo}
+                        alt="Logo Preview"
+                        className="mt-2 h-24 w-24 object-cover rounded-md"
+                      />
+                    ) : (
+                      selectedSchool?.logoUrl && (
+                        <img
+                          src={selectedSchool.logoUrl}
+                          alt="Current Logo"
+                          className="mt-2 h-24 w-24 object-cover rounded-md"
+                        />
+                      )
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Banner
+                    </label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleImageUpload(e, setSelectedBanner)}
+                      className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer"
+                    />
+                    {selectedBanner ? (
+                      <img
+                        src={selectedBanner}
+                        alt="Banner Preview"
+                        className="mt-2 h-24 w-full object-cover rounded-md"
+                      />
+                    ) : (
+                      selectedSchool?.bannerUrl && (
+                        <img
+                          src={selectedSchool.bannerUrl}
+                          alt="Current Banner"
+                          className="mt-2 h-24 w-full object-cover rounded-md"
+                        />
+                      )
+                    )}
+                  </div>
                   <Input
                     isRequired
                     label="Description"

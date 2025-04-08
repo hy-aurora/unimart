@@ -34,15 +34,10 @@ export default function SiteNavbar() {
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [isNotifOpen, setIsNotifOpen] = React.useState(false);
 
-  {
-    /*const categories = [
-    { label: "Electronics", href: "/category/electronics", icon: "lucide:smartphone" },
-    { label: "Fashion", href: "/category/fashion", icon: "lucide:shirt" },
-    { label: "Home & Living", href: "/category/home", icon: "lucide:home" },
-    { label: "Books", href: "/category/books", icon: "lucide:book-open" },
-    { label: "Sports", href: "/category/sports", icon: "lucide:dumbbell" },
-  ];*/
-  }
+  const user = useQuery(api.users.get);
+  const cart = useQuery(api.carts.getCart); // Fetch cart data
+  const cartItemCount =
+    cart?.items.reduce((total, item) => total + item.quantity, 0) || 0; // Calculate total items
 
   const pages = [
     { href: "/schools", label: "Schools" },
@@ -50,8 +45,6 @@ export default function SiteNavbar() {
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact Us" },
   ];
-
-  const user = useQuery(api.users.get);
 
   const userActions = [
     {
@@ -67,8 +60,6 @@ export default function SiteNavbar() {
       href: user?.role === "admin" ? "/admin" : "/profile",
     },
   ];
-
-  const cartItemCount = 3; // Example cart count
 
   return (
     <>

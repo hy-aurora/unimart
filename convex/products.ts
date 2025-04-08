@@ -111,3 +111,13 @@ export const getBySchool = query({
       .collect();
   },
 });
+
+// Query to get product details by ID
+export const getProductById = query({
+  args: {
+    productId: v.id("products"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.productId);
+  },
+});
