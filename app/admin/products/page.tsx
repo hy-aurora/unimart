@@ -50,6 +50,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GenericId } from "convex/values";
+import imageCompression from "browser-image-compression";
 
 export default function ProductsPage() {
   const products = useQuery(api.products.getAll) || [];
@@ -59,7 +60,9 @@ export default function ProductsPage() {
   const deleteProduct = useMutation(api.products.remove);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<null | typeof products[0]>(null);
+  const [selectedProduct, setSelectedProduct] = useState<
+    null | (typeof products)[0]
+  >(null);
   const [formState, setFormState] = useState({
     name: "",
     price: "",
@@ -76,14 +79,23 @@ export default function ProductsPage() {
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedFile = await imageCompression(file, {
+          maxSizeMB: 0.8, // Compress to under 0.8 MiB to ensure it's below 1 MiB
+          maxWidthOrHeight: 1024, // Resize to a maximum dimension of 1024px
+          useWebWorker: true,
+        });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSelectedImage(reader.result as string);
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error("Image compression failed:", error);
+      }
     }
   };
 
@@ -368,13 +380,16 @@ export default function ProductsPage() {
                                 onClick={() => {
                                   setSelectedProduct(product);
                                   setFormState({
-                                      name: product.name,
-                                      price: product.price.toString(),
-                                      category: product.category || "",
-                                      stock: product.stock.toString(),
-                                      description: "description" in product ? (product.description as string) : "", // Ensure description is optional
-                                      image: null,
-                                      schoolId: product.schoolId || "", // Add schoolId
+                                    name: product.name,
+                                    price: product.price.toString(),
+                                    category: product.category || "",
+                                    stock: product.stock.toString(),
+                                    description:
+                                      "description" in product
+                                        ? (product.description as string)
+                                        : "", // Ensure description is optional
+                                    image: null,
+                                    schoolId: product.schoolId || "", // Add schoolId
                                   });
                                 }}
                               >

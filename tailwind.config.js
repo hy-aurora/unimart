@@ -35,6 +35,14 @@ const config = {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
@@ -54,14 +62,6 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
-        },
-        sidebar: {
-          DEFAULT: "hsl(var(--background))",
-          foreground: "hsl(var(--foreground))",
-          border: "hsl(var(--border))",
-          ring: "hsl(var(--ring))",
-          accent: "hsl(var(--accent))",
-          "accent-foreground": "hsl(var(--accent-foreground))",
         },
       },
       borderRadius: {
@@ -85,6 +85,11 @@ const config = {
         ...heroui.animation,
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      boxShadow: {
+        ...heroui.boxShadow,
+        'soft': '0 2px 8px -2px rgba(0, 0, 0, 0.1)',
+        'card': '0 2px 8px -2px rgba(0, 0, 0, 0.06)',
       },
     },
   },

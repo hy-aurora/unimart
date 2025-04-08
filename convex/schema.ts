@@ -47,6 +47,7 @@ export default defineSchema({
     isSale: v.optional(v.boolean()),
     category: v.optional(v.string()),
     school: v.optional(v.string()),
+    description: v.string(), // Added this field
     sizes: v.array(v.string()),
     gender: v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex")),
     classLevel: v.string(),

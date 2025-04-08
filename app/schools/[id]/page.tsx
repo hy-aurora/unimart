@@ -6,8 +6,7 @@ import { ArrowLeft, Filter } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@heroui/react";
 import { ProductCard } from "@/components/product-card";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -15,7 +14,9 @@ export default function SchoolPage() {
   const params = useParams();
   const schoolId = params.id as string;
 
-  const school = useQuery(api.schools.getById, { schoolId: schoolId as Id<"schools"> }) as {
+  const school = useQuery(api.schools.getById, {
+    schoolId: schoolId as Id<"schools">,
+  }) as {
     _id: Id<"schools">;
     _creationTime: number;
     name: string;
@@ -27,7 +28,9 @@ export default function SchoolPage() {
     createdAt: number;
     categories?: string[]; // Added categories property
   } | null;
-  const products = useQuery(api.products.getBySchool, { schoolId: schoolId as Id<"schools"> });
+  const products = useQuery(api.products.getBySchool, {
+    schoolId: schoolId as Id<"schools">,
+  });
 
   if (!school) {
     return <div>Loading school details...</div>;

@@ -19,6 +19,7 @@ import {
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import imageCompression from "browser-image-compression";
 
 interface School {
   _id: string;
@@ -62,17 +63,26 @@ export default function SchoolList() {
     null
   );
 
-  const handleImageUpload = (
+  const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     setImage: React.Dispatch<React.SetStateAction<string | null>>
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedFile = await imageCompression(file, {
+          maxSizeMB: 0.8, // Compress to under 0.8 MiB to ensure it's below 1 MiB
+          maxWidthOrHeight: 1024, // Resize to a maximum dimension of 1024px
+          useWebWorker: true,
+        });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImage(reader.result as string);
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error("Image compression failed:", error);
+      }
     }
   };
 

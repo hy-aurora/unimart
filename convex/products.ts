@@ -17,7 +17,7 @@ export const add = mutation({
     isSale: v.optional(v.boolean()),
     category: v.optional(v.string()),
     school: v.optional(v.string()),
-    description: v.string(),
+    description: v.string(), // Ensure this field is validated
     sizes: v.array(v.string()),
     gender: v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex")),
     classLevel: v.string(),

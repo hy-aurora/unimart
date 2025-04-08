@@ -1,77 +1,116 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { useState } from "react"
-import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { CartItemDetails } from "@/components/cart-item-details"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { CartItemDetails } from "@/components/cart-item-details";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function CartPage() {
-  // Mock cart items
-  const [cartItems, setCartItems] = useState([
+  const [cartItems, setCartItems] = useState<
     {
-      id: 1,
-      name: "School Blazer",
-      price: 45.99,
-      quantity: 1,
-      size: "M",
-      color: "Navy",
-      class: "Year 7",
-      image: "/images/placeholder.webp",
-      customMeasurements: null,
-    },
-    {
-      id: 2,
-      name: "White Shirt",
-      price: 15.99,
-      quantity: 2,
-      size: "L",
-      color: "White",
-      class: "Year 7",
-      image: "/images/placeholder.webp",
-      customMeasurements: null,
-    },
-    {
-      id: 3,
-      name: "School Tie",
-      price: 8.99,
-      quantity: 1,
-      size: "One Size",
-      color: "Striped",
-      class: "Year 7",
-      image: "/images/placeholder.webp",
-      customMeasurements: null,
-    },
-  ])
+      size?: string;
+      customSize?: {
+        chest?: number;
+        waist?: number;
+        height?: number;
+        notes?: string;
+      };
+      productId: string;
+      quantity: number;
+      price: number;
+      name: string;
+      image?: string;
+    }[]
+  >([]);
+  const getCart = useQuery(api.carts.getCart) as {
+    items: {
+      size?: string;
+      customSize?: {
+        chest?: number;
+        waist?: number;
+        height?: number;
+        notes?: string;
+      };
+      productId: string;
+      quantity: number;
+      price?: number;
+      name?: string;
+      image?: string;
+    }[];
+  } | null;
+  const addItem = useMutation(api.carts.addItem);
+  const updateItem = useMutation(api.carts.updateItem);
+  const removeItem = useMutation(api.carts.removeItem);
+  const clearCart = useMutation(api.carts.clearCart);
 
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity < 1) return
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
-  }
+  useEffect(() => {
+    if (getCart) {
+      setCartItems(
+        getCart.items.map((item) => ({
+          ...item,
+          price: item.price || 0,
+          name: item.name || "Unknown Product",
+          image: item.image || "/images/placeholder.webp",
+        }))
+      );
+    }
+  }, [getCart]);
 
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
+  const updateQuantity = async (id: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    const item = cartItems.find((item) => item.productId === id);
+    if (item) {
+      await updateItem({ productId: id as Id<"products">, quantity: newQuantity });
+      setCartItems(
+        cartItems.map((item) =>
+          item.productId === id ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    }
+  };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = 4.99
-  const total = subtotal + shipping
+  const removeItemFromCart = async (id: string) => {
+    await removeItem({ productId: id as Id<"products"> });
+    setCartItems(cartItems.filter((item) => item.productId !== id));
+  };
+
+  const clearCartItems = async () => {
+    await clearCart();
+    setCartItems([]);
+  };
+
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const shipping = 4.99;
+  const total = subtotal + shipping;
 
   return (
     <div className="container px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-indigo-900 dark:text-indigo-400">Your Cart</h1>
+      <h1 className="text-3xl font-bold mb-6 text-indigo-900 dark:text-indigo-400">
+        Your Cart
+      </h1>
 
       {cartItems.length === 0 ? (
         <div className="text-center py-12">
           <div className="flex justify-center mb-4">
             <ShoppingBag className="h-16 w-16 text-gray-300" />
           </div>
-          <h2 className="text-2xl font-bold mb-2 text-indigo-900 dark:text-indigo-400">Your cart is empty</h2>
-          <p className="text-gray-500 mb-6">Looks like you haven't added any items to your cart yet.</p>
+          <h2 className="text-2xl font-bold mb-2 text-indigo-900 dark:text-indigo-400">
+            Your cart is empty
+          </h2>
+          <p className="text-gray-500 mb-6">
+            Looks like you haven't added any items to your cart yet.
+          </p>
           <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
             <Link href="/schools">Continue Shopping</Link>
           </Button>
@@ -90,18 +129,25 @@ export default function CartPage() {
               </div>
 
               {cartItems.map((item) => (
-                <div key={item.id} className="px-4 py-4 border-t">
+                <div key={item.productId} className="px-4 py-4 border-t">
                   <div className="grid grid-cols-12 gap-4 items-center">
                     <div className="col-span-6">
                       <div className="flex items-center">
                         <div className="relative w-16 h-16 rounded overflow-hidden mr-4">
-                          <Image src={item.image || "/images/placeholder.webp"} alt={item.name} fill className="object-cover" />
+                          <Image
+                            src={item.image || "/images/placeholder.webp"}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
                         <div>
-                          <h3 className="font-medium text-indigo-900 dark:text-indigo-300">{item.name}</h3>
+                          <h3 className="font-medium text-indigo-900 dark:text-indigo-300">
+                            {item.name}
+                          </h3>
                           <CartItemDetails item={item} />
                           <button
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItemFromCart(item.productId)}
                             className="text-sm text-red-500 flex items-center mt-1"
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
@@ -110,14 +156,18 @@ export default function CartPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="col-span-2 text-center">£{item.price.toFixed(2)}</div>
+                    <div className="col-span-2 text-center">
+                      £{item.price.toFixed(2)}
+                    </div>
                     <div className="col-span-2 flex justify-center">
                       <div className="flex items-center">
                         <Button
                           variant="outline"
                           size="icon"
                           className="h-8 w-8 border-indigo-200"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity - 1)
+                          }
                         >
                           <Minus className="h-3 w-3" />
                           <span className="sr-only">Decrease quantity</span>
@@ -129,7 +179,9 @@ export default function CartPage() {
                           variant="outline"
                           size="icon"
                           className="h-8 w-8 border-indigo-200"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity + 1)
+                          }
                         >
                           <Plus className="h-3 w-3" />
                           <span className="sr-only">Increase quantity</span>
@@ -154,7 +206,7 @@ export default function CartPage() {
               </Link>
               <Button
                 variant="outline"
-                onClick={() => setCartItems([])}
+                onClick={clearCartItems}
                 className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-950"
               >
                 Clear Cart
@@ -164,24 +216,34 @@ export default function CartPage() {
 
           <div className="lg:col-span-1">
             <div className="border rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-bold mb-4 text-indigo-900 dark:text-indigo-400">Order Summary</h2>
+              <h2 className="text-xl font-bold mb-4 text-indigo-900 dark:text-indigo-400">
+                Order Summary
+              </h2>
 
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Subtotal</span>
-                  <span className="text-indigo-900 dark:text-indigo-300">£{subtotal.toFixed(2)}</span>
+                  <span className="text-indigo-900 dark:text-indigo-300">
+                    £{subtotal.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Shipping</span>
-                  <span className="text-indigo-900 dark:text-indigo-300">£{shipping.toFixed(2)}</span>
+                  <span className="text-indigo-900 dark:text-indigo-300">
+                    £{shipping.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
               <Separator className="my-4" />
 
               <div className="flex justify-between font-bold mb-6">
-                <span className="text-indigo-900 dark:text-indigo-300">Total</span>
-                <span className="text-indigo-700 dark:text-indigo-400">£{total.toFixed(2)}</span>
+                <span className="text-indigo-900 dark:text-indigo-300">
+                  Total
+                </span>
+                <span className="text-indigo-700 dark:text-indigo-400">
+                  £{total.toFixed(2)}
+                </span>
               </div>
 
               <div className="space-y-4">
@@ -193,7 +255,11 @@ export default function CartPage() {
                     Coupon Code
                   </label>
                   <div className="flex">
-                    <Input id="coupon" placeholder="Enter coupon" className="rounded-r-none" />
+                    <Input
+                      id="coupon"
+                      placeholder="Enter coupon"
+                      className="rounded-r-none"
+                    />
                     <Button
                       variant="outline"
                       className="rounded-l-none border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-950"
@@ -203,7 +269,11 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <Button className="w-full bg-indigo-600 hover:bg-indigo-700" size="lg" asChild>
+                <Button
+                  className="w-full bg-indigo-600 hover:bg-indigo-700"
+                  size="lg"
+                  asChild
+                >
                   <Link href="/checkout">Proceed to Checkout</Link>
                 </Button>
               </div>
@@ -212,6 +282,5 @@ export default function CartPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
-
