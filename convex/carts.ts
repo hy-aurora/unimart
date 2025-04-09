@@ -1,7 +1,10 @@
 import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-// Mutation to add an item to the cart
+// In-memory cache for non-logged-in users
+const guestCartCache = new Map();
+
+// Mutation to add an item to the cart or guest cache
 export const addItem = mutation({
   args: {
     productId: v.id("products"),
@@ -15,8 +18,17 @@ export const addItem = mutation({
         notes: v.optional(v.string()),
       })
     ),
+    guestId: v.optional(v.string()), // For guest users
   },
   handler: async (ctx, args) => {
+    if (args.guestId) {
+      // Handle guest user
+      const guestCart = guestCartCache.get(args.guestId) || [];
+      guestCart.push(args);
+      guestCartCache.set(args.guestId, guestCart);
+      return { success: true, guestCart };
+    }
+
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new ConvexError("Unauthorized");
@@ -183,12 +195,67 @@ export const clearCart = mutation({
   },
 });
 
-// Query to get the cart with product details
-export const getCart = query({
-  handler: async (ctx) => {
+// Mutation to merge guest cart into user cart upon login
+export const mergeGuestCart = mutation({
+  args: {
+    guestId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const guestCart = guestCartCache.get(args.guestId) || [];
+    guestCartCache.delete(args.guestId);
+
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const cart = await ctx.db
+      .query("carts")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .unique();
+
+    if (!cart) {
+      await ctx.db.insert("carts", {
+        userId: user._id,
+        items: guestCart,
+        updatedAt: Date.now(),
+      });
+    } else {
+      const updatedItems = [...cart.items, ...guestCart];
+      await ctx.db.patch(cart._id, {
+        items: updatedItems,
+        updatedAt: Date.now(),
+      });
+    }
+
+    return { success: true };
+  },
+});
+
+// Query to get the cart or guest cache
+export const getCart = query({
+  args: {
+    guestId: v.optional(v.string()), // For guest users
+  },
+  handler: async (ctx, args) => {
+    if (args.guestId) {
+      // Handle guest user
+      const guestCart = guestCartCache.get(args.guestId) || [];
+      return { items: guestCart };
+    }
+
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { items: [] }; // Return empty cart for non-logged-in users
     }
 
     const user = await ctx.db

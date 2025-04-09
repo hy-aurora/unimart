@@ -30,7 +30,7 @@ export default function CartPage() {
       image?: string;
     }[]
   >([]);
-  const getCart = useQuery(api.carts.getCart) as {
+  const getCart = useQuery(api.carts.getCart, {}) as {
     items: {
       size?: string;
       customSize?: {

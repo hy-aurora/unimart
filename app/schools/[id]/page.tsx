@@ -6,11 +6,11 @@ import { ProductCard } from "@/components/product-card";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 
 export default function SchoolPage() {
-  const searchParams = useSearchParams();
-  const schoolId = searchParams.get("id"); // Retrieve the id from search params
+  const params = useParams();
+  const schoolId = params.id as string; // Retrieve the id from route params
 
   if (!schoolId || schoolId.trim() === "") {
     return <div>Error: School ID is missing or invalid.</div>; // Handle missing or invalid schoolId
@@ -21,7 +21,6 @@ export default function SchoolPage() {
   }); // Fetch school with products
   const categories = useQuery(api.categories.getAll) || []; // Fetch categories from backend
   const [selectedCategory, setSelectedCategory] = React.useState("all");
-  const [sortOption, setSortOption] = React.useState("popular");
 
   const filteredProducts = React.useMemo(() => {
     if (!school) return [];
@@ -29,18 +28,8 @@ export default function SchoolPage() {
     if (selectedCategory !== "all") {
       filtered = filtered.filter((p) => p.category === selectedCategory);
     }
-    switch (sortOption) {
-      case "price-asc":
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        break;
-    }
     return filtered;
-  }, [school, selectedCategory, sortOption]);
+  }, [school, selectedCategory]);
 
   if (!school) {
     return <div>Loading...</div>;
@@ -127,15 +116,6 @@ export default function SchoolPage() {
                     ? "All Products"
                     : selectedCategory}
                 </h2>
-                <select
-                  className="border rounded-lg px-3 py-2"
-                  value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value)}
-                >
-                  <option value="popular">Most Popular</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                </select>
               </CardBody>
             </Card>
 

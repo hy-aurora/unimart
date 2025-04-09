@@ -35,9 +35,9 @@ export default function SiteNavbar() {
   const [isNotifOpen, setIsNotifOpen] = React.useState(false);
 
   const user = useQuery(api.users.get);
-  const cart = useQuery(api.carts.getCart); // Fetch cart data
+  const cart = useQuery(api.carts.getCart, {}); // Fetch cart data
   const cartItemCount =
-    cart?.items.reduce((total, item) => total + item.quantity, 0) || 0; // Calculate total items
+    cart?.items.reduce((total: any, item: { quantity: any; }) => total + item.quantity, 0) || 0; // Calculate total items
 
   const pages = [
     { href: "/schools", label: "Schools" },
