@@ -90,8 +90,8 @@ export const getForCatalog = query({
   handler: async (ctx) => {
     return await ctx.db
       .query("schools")
-      .withIndex("by_createdAt") // Sort schools by creation date
-      .order("desc") // Order by newest first
+      .withIndex("by_createdAt")
+      .order("desc")
       .collect();
   },
 });

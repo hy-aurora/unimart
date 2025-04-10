@@ -177,7 +177,7 @@ export default function SiteNavbar() {
                       </Link>
                     </DropdownItem>
                   ))}
-                  </>
+                  </> 
                   <DropdownItem
                     key="logout"
                     className="text-danger"
@@ -252,7 +252,7 @@ export default function SiteNavbar() {
                 <Link
                   color="foreground"
                   className="w-full flex items-center gap-2"
-                  href={action.href}
+                  href={action.key === "profile" ? (user?.role === "admin" ? "/admin" : "/profile") : action.href}
                   size="lg"
                 >
                   <Icon icon={action.icon} className="h-4 w-4" />
@@ -268,8 +268,7 @@ export default function SiteNavbar() {
                 size="lg"
               >
                 <SignOutButton>
-                  <Icon icon="lucide:log-out" className="h-4 w-4" />
-                  Log Out
+                  <div>Log Out</div>
                 </SignOutButton>
               </Link>
             </NavbarMenuItem>

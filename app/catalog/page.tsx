@@ -3,16 +3,8 @@ import React from 'react';
 import { Button, Input, Card, CardBody, Badge, Checkbox, Select, SelectItem, Slider } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  imageUrl: string;
-  isNew?: boolean;
-  isSale?: boolean;
-}
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 export default function CatalogPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -20,27 +12,9 @@ export default function CatalogPage() {
   const [priceRange, setPriceRange] = React.useState([0, 100]);
   const [sortBy, setSortBy] = React.useState("featured");
 
-  // Mock data - replace with your actual data
-  const categories = [
-    "Blazers",
-    "Shirts",
-    "Trousers",
-    "Skirts",
-    "PE Kit",
-    "Accessories"
-  ];
-
-  const products: Product[] = [
-    {
-      id: "1",
-      name: "School Blazer",
-      price: 49.99,
-      category: "Blazers",
-      imageUrl: "https://img.heroui.chat/image/fashion?w=400&h=500&u=41",
-      isNew: true
-    },
-    // Add more products...
-  ];
+  const schools = useQuery(api.schools.getForCatalog) || [];
+  const products = useQuery(api.products.getAll) || [];
+  const categories = useQuery(api.categories.getAllCategories) || [];
 
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories(prev => 
@@ -87,11 +61,11 @@ export default function CatalogPage() {
                   <div className="space-y-2">
                     {categories.map(category => (
                       <Checkbox
-                        key={category}
-                        isSelected={selectedCategories.includes(category)}
-                        onValueChange={() => handleCategoryToggle(category)}
+                        key={category.name}
+                        isSelected={selectedCategories.includes(category.name)}
+                        onValueChange={() => handleCategoryToggle(category.name)}
                       >
-                        {category}
+                        {category.name}
                       </Checkbox>
                     ))}
                   </div>
@@ -158,7 +132,7 @@ export default function CatalogPage() {
                 <Card isPressable className="group">
                   <div className="aspect-square overflow-hidden">
                     <img
-                      src={product.imageUrl}
+                      src={product.imageUrls[0]}
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />

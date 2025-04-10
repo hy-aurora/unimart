@@ -3,45 +3,26 @@ import React from 'react';
 import { Button, Card, CardBody, Badge, Tabs, Tab } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  category: string;
-  school: string;
-  rating: number;
-  reviews: number;
-  imageUrls: string[];
-  sizes: string[];
-  colors: string[];
-}
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { useParams } from 'next/navigation';
+import { Id } from '@/convex/_generated/dataModel';
 
 export default function ProductPage() {
+  const params = useParams();
+  const id = params?.id && typeof params.id === 'string' ? params.id : null;
+  const product = useQuery(
+    api.products.getProductById,
+    id ? { productId: id as Id<"products"> } : "skip"
+  );
+
   const [selectedImage, setSelectedImage] = React.useState(0);
   const [selectedSize, setSelectedSize] = React.useState("");
   const [selectedColor, setSelectedColor] = React.useState("");
 
-  // Mock data - replace with your actual data fetching
-  const product: Product = {
-    id: "1",
-    name: "School Blazer",
-    price: 49.99,
-    description: "Premium quality school blazer with embroidered logo.",
-    category: "Blazers",
-    school: "St. Mary's Academy",
-    rating: 4.5,
-    reviews: 24,
-    imageUrls: [
-      "https://img.heroui.chat/image/fashion?w=600&h=800&u=31",
-      "https://img.heroui.chat/image/fashion?w=600&h=800&u=32",
-      "https://img.heroui.chat/image/fashion?w=600&h=800&u=33",
-      "https://img.heroui.chat/image/fashion?w=600&h=800&u=34"
-    ],
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: ["Navy", "Black"]
-  };
+  if (!product) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -50,12 +31,12 @@ export default function ProductPage() {
         className="mb-6"
         startContent={<Icon icon="lucide:arrow-left" />}
       >
-        Back to {product.school}
+        Back to {product.schoolId}
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         <div className="space-y-4">
-          <motion.div 
+          <motion.div
             className="relative aspect-square overflow-hidden rounded-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -71,9 +52,8 @@ export default function ProductPage() {
               <Card
                 key={i}
                 isPressable
-                className={`aspect-square overflow-hidden ${
-                  i === selectedImage ? 'ring-2 ring-primary' : ''
-                }`}
+                className={`aspect-square overflow-hidden ${i === selectedImage ? 'ring-2 ring-primary' : ''
+                  }`}
                 onPress={() => setSelectedImage(i)}
               >
                 <img
@@ -97,15 +77,14 @@ export default function ProductPage() {
                 <Icon
                   key={i}
                   icon="lucide:star"
-                  className={`w-5 h-5 ${
-                    i < Math.floor(product.rating)
+                  className={`w-5 h-5 ${i < Math.floor(product.rating ?? 0)
                       ? 'text-yellow-400'
                       : 'text-gray-300'
-                  }`}
+                    }`}
                 />
               ))}
               <span className="text-gray-600">
-                ({product.reviews} reviews)
+                ({product.ratingCount ?? 0} reviews)
               </span>
             </div>
             <p className="text-2xl font-bold text-primary mt-4">
@@ -131,7 +110,7 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              <div>
+              {/*              <div>
                 <h3 className="text-sm font-medium mb-3">Color</h3>
                 <div className="flex flex-wrap gap-2">
                   {product.colors.map((color) => (
@@ -145,7 +124,7 @@ export default function ProductPage() {
                     </Button>
                   ))}
                 </div>
-              </div>
+              </div>*/}
 
               <Button
                 color="primary"
@@ -187,7 +166,7 @@ export default function ProductPage() {
                 </CardBody>
               </Card>
             </Tab>
-            <Tab key="reviews" title={`Reviews (${product.reviews})`}>
+            <Tab key="reviews" title={`Reviews (${product.ratingCount ?? 0})`}>
               <Card>
                 <CardBody>
                   <div className="space-y-4">
@@ -197,11 +176,10 @@ export default function ProductPage() {
                           <Icon
                             key={i}
                             icon="lucide:star"
-                            className={`w-5 h-5 ${
-                              i < Math.floor(product.rating)
+                            className={`w-5 h-5 ${i < Math.floor(product.rating ?? 0)
                                 ? 'text-yellow-400'
                                 : 'text-gray-300'
-                            }`}
+                              }`}
                           />
                         ))}
                         <span className="text-gray-600">
