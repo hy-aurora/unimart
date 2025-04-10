@@ -12,6 +12,7 @@ export default defineSchema({
     name: v.string(),
     role: v.union(v.literal("admin"), v.literal("user")),
     phone: v.string(),
+    isActive: v.boolean(),
     address: v.string(),
   })
     .index("by_username", ["username"])

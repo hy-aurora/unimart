@@ -1,9 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Camera, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
+import { useMutation, useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,33 +15,86 @@ import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function ProfileSettings() {
   const { theme, setTheme } = useTheme()
+  const userData = useQuery(api.users.get);
+  const updateProfile = useMutation(api.users.updateProfile);
+  
+  // State for notification settings
+  const [notifications, setNotifications] = useState({
+    email: true,
+    sms: false,
+    promotions: true,
+    orderUpdates: true,
+    newsletter: false,
+  });
 
-  // Mock user data
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Initialize user state with empty values
   const [user, setUser] = useState({
-    name: "John Smith",
-    email: "john.smith@example.com",
-    phone: "+44 7123 456789",
-    avatar: "/placeholder.svg?height=100&width=100&text=JS",
-    notifications: {
-      email: true,
-      sms: false,
-      promotions: true,
-      orderUpdates: true,
-      newsletter: false,
-    },
-  })
+    name: "",
+    email: "",
+    phone: "",
+    avatar: ""
+  });
+
+  // Update local state when Convex data loads
+  useEffect(() => {
+    if (userData) {
+      setUser({
+        name: userData.name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        avatar: userData.imageUrl || "/placeholder.svg"
+      });
+    }
+  }, [userData]);
 
   const handleNotificationChange = (key: string, value: boolean) => {
-    setUser({
-      ...user,
-      notifications: {
-        ...user.notifications,
-        [key]: value,
-      },
-    })
+    setNotifications({
+      ...notifications,
+      [key]: value,
+    });
+  }
+
+  const handleSaveProfile = async () => {
+    setIsLoading(true);
+    try {
+      await updateProfile({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      });
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (userData === undefined) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <div className="flex items-start gap-6">
+          <Skeleton className="h-32 w-32 rounded-full" />
+          <div className="space-y-4 flex-1">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return <div>Please sign in to manage your settings.</div>;
   }
 
   return (
@@ -112,7 +168,13 @@ export function ProfileSettings() {
             </div>
 
             <div className="flex justify-end">
-              <Button className="bg-indigo-600 hover:bg-indigo-700">Save Changes</Button>
+              <Button 
+                className="bg-indigo-600 hover:bg-indigo-700"
+                onClick={handleSaveProfile}
+                disabled={isLoading}
+              >
+                {isLoading ? "Saving..." : "Save Changes"}
+              </Button>
             </div>
           </div>
         </TabsContent>
@@ -205,7 +267,7 @@ export function ProfileSettings() {
                 </div>
                 <Switch
                   id="email-notifications"
-                  checked={user.notifications.email}
+                  checked={notifications.email}
                   onCheckedChange={(checked) => handleNotificationChange("email", checked)}
                 />
               </div>
@@ -221,7 +283,7 @@ export function ProfileSettings() {
                 </div>
                 <Switch
                   id="sms-notifications"
-                  checked={user.notifications.sms}
+                  checked={notifications.sms}
                   onCheckedChange={(checked) => handleNotificationChange("sms", checked)}
                 />
               </div>
@@ -237,7 +299,7 @@ export function ProfileSettings() {
                 </div>
                 <Switch
                   id="order-updates"
-                  checked={user.notifications.orderUpdates}
+                  checked={notifications.orderUpdates}
                   onCheckedChange={(checked) => handleNotificationChange("orderUpdates", checked)}
                 />
               </div>
@@ -253,7 +315,7 @@ export function ProfileSettings() {
                 </div>
                 <Switch
                   id="promotions"
-                  checked={user.notifications.promotions}
+                  checked={notifications.promotions}
                   onCheckedChange={(checked) => handleNotificationChange("promotions", checked)}
                 />
               </div>
@@ -269,7 +331,7 @@ export function ProfileSettings() {
                 </div>
                 <Switch
                   id="newsletter"
-                  checked={user.notifications.newsletter}
+                  checked={notifications.newsletter}
                   onCheckedChange={(checked) => handleNotificationChange("newsletter", checked)}
                 />
               </div>

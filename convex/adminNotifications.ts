@@ -1,8 +1,36 @@
 import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-// Mutation to add a new admin notification
-export const add = mutation({
+// Query to get all admin notifications
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
+    // Get notifications sorted by creation date (newest first)
+    const notifications = await ctx.db
+      .query("admin_notifications")
+      .order("desc")
+      .collect();
+
+    return notifications;
+  },
+});
+
+// Mutation to create a new admin notification
+export const create = mutation({
   args: {
     message: v.string(),
     type: v.union(
@@ -19,6 +47,15 @@ export const add = mutation({
       throw new ConvexError("Unauthorized");
     }
 
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
     const notificationId = await ctx.db.insert("admin_notifications", {
       message: args.message,
       type: args.type,
@@ -31,7 +68,7 @@ export const add = mutation({
   },
 });
 
-// Mutation to mark an admin notification as read
+// Mutation to mark a notification as read
 export const markAsRead = mutation({
   args: {
     notificationId: v.id("admin_notifications"),
@@ -42,9 +79,13 @@ export const markAsRead = mutation({
       throw new ConvexError("Unauthorized");
     }
 
-    const notification = await ctx.db.get(args.notificationId);
-    if (!notification) {
-      throw new ConvexError("Notification not found");
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
     }
 
     await ctx.db.patch(args.notificationId, { isRead: true });
@@ -52,8 +93,8 @@ export const markAsRead = mutation({
   },
 });
 
-// Query to get all admin notifications
-export const getAll = query({
+// Mutation to mark all notifications as read
+export const markAllAsRead = mutation({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -61,7 +102,49 @@ export const getAll = query({
       throw new ConvexError("Unauthorized");
     }
 
-    const notifications = await ctx.db.query("admin_notifications").collect();
-    return notifications;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
+    const unreadNotifications = await ctx.db
+      .query("admin_notifications")
+      .filter((q) => q.eq(q.field("isRead"), false))
+      .collect();
+
+    for (const notification of unreadNotifications) {
+      await ctx.db.patch(notification._id, { isRead: true });
+    }
+
+    return { success: true };
+  },
+});
+
+// Mutation to delete a notification
+export const remove = mutation({
+  args: {
+    notificationId: v.id("admin_notifications"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
+    await ctx.db.delete(args.notificationId);
+    return { success: true };
   },
 });

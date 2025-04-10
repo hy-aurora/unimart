@@ -8,6 +8,7 @@ export const create = internalMutation({
         password: v.string(),   // Password for the new user (should be hashed before storing)
         email: v.string(),      // Email address of the new user
         name: v.string(),       // Full name of the new user
+        isActive: v.boolean(),  // Whether the user is active
         imageUrl: v.string(),   // URL of the user's profile image
         clerkId: v.string(),     // Unique identifier from Clerk authentication
         role: v.union(v.literal("user"), v.literal("admin")), // Role of the user (either "user" or "admin")

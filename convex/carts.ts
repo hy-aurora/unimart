@@ -264,7 +264,8 @@ export const getCart = query({
       .unique();
 
     if (!user) {
-      throw new ConvexError("User not found");
+      // Return empty cart instead of throwing error when user is authenticated but not in the database
+      return { items: [] };
     }
 
     const cart = await ctx.db

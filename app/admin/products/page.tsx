@@ -270,6 +270,7 @@ export default function ProductsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Image</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Price</TableHead>
@@ -283,6 +284,17 @@ export default function ProductsPage() {
                   <TableBody>
                     {filteredProducts.map((product) => (
                       <TableRow key={product._id}>
+                        <TableCell>
+                          {product.imageUrls && product.imageUrls[0] && (
+                            <div className="h-10 w-10 relative overflow-hidden rounded">
+                              <img 
+                                src={product.imageUrls[0]} 
+                                alt={product.name}
+                                className="object-cover h-full w-full"
+                              />
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell>{product.name}</TableCell>
                         <TableCell>{product.category || "N/A"}</TableCell>
                         <TableCell>₹{product.price.toFixed(2)}</TableCell>

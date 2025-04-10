@@ -48,6 +48,47 @@ export const update = mutation({
   },
 });
 
+// Mutation to update user status (active/disabled)
+export const updateStatus = mutation({
+  args: {
+    userId: v.id("users"),
+    isActive: v.boolean()
+  },
+  handler: async (ctx, args) => {
+    // Check authentication
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    // Ensure current user is an admin
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    
+    if (!currentUser || currentUser.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
+    // Get the target user
+    const targetUser = await ctx.db.get(args.userId);
+    if (!targetUser) {
+      throw new ConvexError("User not found");
+    }
+
+    // Check if trying to modify an admin account
+    if (targetUser.role === "admin") {
+      throw new ConvexError("Cannot modify admin accounts");
+    }
+
+    // Update user status
+    await ctx.db.patch(args.userId, { isActive: args.isActive });
+    
+    return { success: true };
+  }
+});
+
 // Query to get user data by Clerk ID
 export const get = query({
   args: {},
@@ -90,4 +131,260 @@ export const get = query({
       // Add any other fields you want to return
     };
   },
+});
+
+// Add this new function to get all users (for admin)
+export const getAllUsers = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
+    // Get all users
+    const allUsers = await ctx.db.query("users").collect();
+    
+    return allUsers;
+  },
+});
+
+// Add new mutation for managing user addresses
+export const addAddress = mutation({
+  args: {
+    name: v.string(),
+    line1: v.string(),
+    line2: v.optional(v.string()),
+    city: v.string(),
+    postalCode: v.string(),
+    country: v.string(),
+    isDefault: v.boolean(),
+    type: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    // Ensure addresses is an array
+    const currentAddresses = Array.isArray(user.address) ? user.address : [];
+
+    // If this is the first address or marked as default, update all others
+    const updatedAddresses = args.isDefault
+      ? currentAddresses.map((addr: any) => ({ ...addr, isDefault: false }))
+      : [...currentAddresses];
+
+    // Add new address with unique ID
+    const newAddress = {
+      ...args,
+      id: Math.random().toString(36).substring(2, 15),
+      createdAt: Date.now(),
+    };
+
+    updatedAddresses.push(newAddress);
+
+    // Update user with new addresses
+    await ctx.db.patch(user._id, { address: JSON.stringify(updatedAddresses) });
+
+    return newAddress;
+  },
+});
+
+export const updateAddress = mutation({
+  args: {
+    addressId: v.string(),
+    name: v.optional(v.string()),
+    line1: v.optional(v.string()),
+    line2: v.optional(v.string()),
+    city: v.optional(v.string()),
+    postalCode: v.optional(v.string()),
+    country: v.optional(v.string()),
+    isDefault: v.optional(v.boolean()),
+    type: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const { addressId, ...updates } = args;
+    const currentAddresses = Array.isArray(user.address) ? user.address : [];
+
+    // Find the address to update
+    const addressIndex = currentAddresses.findIndex((addr) => addr.id === addressId);
+    if (addressIndex === -1) {
+      throw new ConvexError("Address not found");
+    }
+
+    // Update the address
+    const updatedAddresses = [...currentAddresses];
+    updatedAddresses[addressIndex] = { ...updatedAddresses[addressIndex], ...updates };
+
+    // Handle default status if needed
+    if (updates.isDefault) {
+      updatedAddresses.forEach((addr, i) => {
+        if (i !== addressIndex) {
+          addr.isDefault = false;
+        }
+      });
+    }
+
+    // Update user with modified addresses
+    await ctx.db.patch(user._id, { address: JSON.stringify(updatedAddresses) });
+
+    return updatedAddresses[addressIndex];
+  },
+});
+
+// Delete an address
+export const deleteAddress = mutation({
+  args: {
+    addressId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const currentAddresses = typeof user.address === "string" ? JSON.parse(user.address) : user.address || [];
+    
+    // Filter out the address to remove
+    const updatedAddresses = currentAddresses.filter((addr: { id: string; }) => addr.id !== args.addressId);
+    
+    // Make sure there's always a default if any addresses remain
+    if (updatedAddresses.length > 0 && !updatedAddresses.some((addr: { isDefault: any; }) => addr.isDefault)) {
+      updatedAddresses[0].isDefault = true;
+    }
+
+    // Update user with new addresses list
+    await ctx.db.patch(user._id, { address: JSON.stringify(updatedAddresses) });
+
+    return { success: true };
+  }
+});
+
+// Update user profile (simplified version)
+export const updateProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    // Update user with provided fields
+    await ctx.db.patch(user._id, { ...args });
+
+    return { success: true, ...args };
+  }
+});
+
+// Get user orders
+export const getUserOrders = query({
+  args: {
+    status: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return [];
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      return [];
+    }
+
+    // Query orders for this user
+    let ordersQuery = ctx.db
+      .query("orders")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id));
+
+    // Filter by status if provided
+    if (args.status && args.status !== "all") {
+      ordersQuery = ordersQuery.filter(q => q.eq(q.field("status"), args.status));
+    }
+
+    const orders = await ordersQuery.collect();
+    
+    // Enhance order details with product info
+    const enhancedOrders = await Promise.all(
+      orders.map(async (order) => {
+        const items = await Promise.all(
+          order.items.map(async (item) => {
+            const product = await ctx.db.get(item.productId);
+            return {
+              ...item,
+              name: product?.name || "Unknown Product",
+              image: product?.imageUrls?.[0] || "/placeholder.svg",
+            };
+          })
+        );
+        
+        return {
+          ...order,
+          items,
+        };
+      })
+    );
+
+    return enhancedOrders;
+  }
 });

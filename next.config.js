@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [], // Allow all hosts
+    domains: ['img.clerk.com',], // Allow all hosts
     remotePatterns: [], // Clear any specific patterns
   },
 };

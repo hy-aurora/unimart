@@ -3,6 +3,8 @@
 import { useState } from "react"
 import Image from "next/image"
 import { Eye, Search } from "lucide-react"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,103 +17,48 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function ProfileOrders() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [status, setStatus] = useState("all")
+  
+  // Fetch orders from Convex
+  const orders = useQuery(api.users.getUserOrders, { status });
 
-  // Mock orders data
-  const orders = [
-    {
-      id: "ORD-001",
-      date: "2023-04-23",
-      status: "Delivered",
-      total: 87.99,
-      items: [
-        {
-          id: 1,
-          name: "School Blazer",
-          price: 45.99,
-          quantity: 1,
-          image: "/placeholder.svg?height=80&width=80&text=Blazer",
-        },
-        {
-          id: 2,
-          name: "School Tie",
-          price: 8.99,
-          quantity: 1,
-          image: "/placeholder.svg?height=80&width=80&text=Tie",
-        },
-      ],
-    },
-    {
-      id: "ORD-002",
-      date: "2023-04-10",
-      status: "Processing",
-      total: 124.5,
-      items: [
-        {
-          id: 3,
-          name: "White Shirt (Pack of 3)",
-          price: 24.99,
-          quantity: 2,
-          image: "/placeholder.svg?height=80&width=80&text=Shirt",
-        },
-        {
-          id: 4,
-          name: "Navy Trousers",
-          price: 18.99,
-          quantity: 2,
-          image: "/placeholder.svg?height=80&width=80&text=Trousers",
-        },
-      ],
-    },
-    {
-      id: "ORD-003",
-      date: "2023-03-28",
-      status: "Shipped",
-      total: 56.25,
-      items: [
-        {
-          id: 5,
-          name: "PE Kit",
-          price: 35.99,
-          quantity: 1,
-          image: "/placeholder.svg?height=80&width=80&text=PE+Kit",
-        },
-        {
-          id: 6,
-          name: "School Socks (Pack of 5)",
-          price: 9.99,
-          quantity: 1,
-          image: "/placeholder.svg?height=80&width=80&text=Socks",
-        },
-      ],
-    },
-    {
-      id: "ORD-004",
-      date: "2023-02-15",
-      status: "Delivered",
-      total: 78.5,
-      items: [
-        {
-          id: 7,
-          name: "School Jumper",
-          price: 28.99,
-          quantity: 1,
-          image: "/placeholder.svg?height=80&width=80&text=Jumper",
-        },
-        {
-          id: 8,
-          name: "School Backpack",
-          price: 24.99,
-          quantity: 1,
-          image: "/placeholder.svg?height=80&width=80&text=Backpack",
-        },
-      ],
-    },
-  ]
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+  };
 
-  const filteredOrders = orders.filter((order) => order.id.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Filter orders based on search term
+  const filteredOrders = orders?.map((order) => ({
+    ...order,
+    createdAt: new Date(order.createdAt).toISOString(),
+    total: order.items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0),
+    shippingAddress: typeof order.shippingAddress === "string"
+      ? JSON.parse(order.shippingAddress)
+      : order.shippingAddress,
+  })).filter((order) => 
+    order._id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    order._id?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  if (orders === undefined) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-10 w-64" />
+        </div>
+        <Skeleton className="h-12 w-full" />
+        <div className="space-y-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -128,7 +75,7 @@ export function ProfileOrders() {
         </div>
       </div>
 
-      <Tabs defaultValue="all">
+      <Tabs defaultValue="all" onValueChange={handleStatusChange}>
         <TabsList className="mb-6">
           <TabsTrigger value="all">All Orders</TabsTrigger>
           <TabsTrigger value="processing">Processing</TabsTrigger>
@@ -143,49 +90,43 @@ export function ProfileOrders() {
                 <p className="text-gray-500">No orders found.</p>
               </div>
             ) : (
-              filteredOrders.map((order) => <OrderItem key={order.id} order={order} />)
+              filteredOrders.map((order) => <OrderItem key={order._id} order={order} />)
             )}
           </div>
         </TabsContent>
 
         <TabsContent value="processing">
           <div className="space-y-4">
-            {filteredOrders.filter((order) => order.status === "Processing").length === 0 ? (
+            {filteredOrders.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">No processing orders found.</p>
               </div>
             ) : (
-              filteredOrders
-                .filter((order) => order.status === "Processing")
-                .map((order) => <OrderItem key={order.id} order={order} />)
+              filteredOrders.map((order) => <OrderItem key={order._id} order={order} />)
             )}
           </div>
         </TabsContent>
 
         <TabsContent value="shipped">
           <div className="space-y-4">
-            {filteredOrders.filter((order) => order.status === "Shipped").length === 0 ? (
+            {filteredOrders.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">No shipped orders found.</p>
               </div>
             ) : (
-              filteredOrders
-                .filter((order) => order.status === "Shipped")
-                .map((order) => <OrderItem key={order.id} order={order} />)
+              filteredOrders.map((order) => <OrderItem key={order._id} order={order} />)
             )}
           </div>
         </TabsContent>
 
         <TabsContent value="delivered">
           <div className="space-y-4">
-            {filteredOrders.filter((order) => order.status === "Delivered").length === 0 ? (
+            {filteredOrders.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">No delivered orders found.</p>
               </div>
             ) : (
-              filteredOrders
-                .filter((order) => order.status === "Delivered")
-                .map((order) => <OrderItem key={order.id} order={order} />)
+              filteredOrders.map((order) => <OrderItem key={order._id} order={order} />)
             )}
           </div>
         </TabsContent>
@@ -194,47 +135,54 @@ export function ProfileOrders() {
   )
 }
 
-type Order = {
-  id: string
-  date: string
-  status: string
-  total: number
-  items: {
-    id: number
-    name: string
-    price: number
-    quantity: number
-    image: string
-  }[]
+interface Order {
+  _id: string;
+  createdAt: string;
+  status: string;
+  total: number;
+  items: { image?: string; name: string; quantity: number; price?: number }[];
+  shippingAddress?: {
+    name: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  subtotal?: number;
+  shippingCost?: number;
 }
 
 function OrderItem({ order }: { order: Order }) {
+  // Format the date
+  const formattedDate = new Date(order.createdAt).toLocaleDateString();
+  
   return (
     <div className="border rounded-lg p-4 shadow-sm">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
         <div>
-          <h3 className="font-medium text-indigo-900 dark:text-indigo-400">{order.id}</h3>
-          <p className="text-sm text-gray-500">Ordered on {order.date}</p>
+          <h3 className="font-medium text-indigo-900 dark:text-indigo-400">{order._id}</h3>
+          <p className="text-sm text-gray-500">Ordered on {formattedDate}</p>
         </div>
         <div className="mt-2 md:mt-0 flex items-center">
           <span
             className={`text-xs px-2 py-1 rounded-full mr-3 ${
-              order.status === "Delivered"
+              order.status === "delivered"
                 ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                : order.status === "Shipped"
+                : order.status === "shipped"
                   ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
                   : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
             }`}
           >
-            {order.status}
+            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
           </span>
           <span className="font-medium text-indigo-900 dark:text-indigo-400">₹{order.total.toFixed(2)}</span>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {order.items.map((item) => (
-          <div key={item.id} className="relative w-16 h-16 rounded overflow-hidden">
+        {order.items.map((item, idx) => (
+          <div key={idx} className="relative w-16 h-16 rounded overflow-hidden">
             <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
           </div>
         ))}
@@ -254,9 +202,9 @@ function OrderItem({ order }: { order: Order }) {
           </DialogTrigger>
           <DialogContent className="max-w-3xl">
             <DialogHeader>
-              <DialogTitle className="text-indigo-900 dark:text-indigo-400">Order {order.id}</DialogTitle>
+              <DialogTitle className="text-indigo-900 dark:text-indigo-400">Order {order._id}</DialogTitle>
               <DialogDescription>
-                Ordered on {order.date} • Status: {order.status}
+                Ordered on {formattedDate} • Status: {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
               </DialogDescription>
             </DialogHeader>
 
@@ -267,8 +215,8 @@ function OrderItem({ order }: { order: Order }) {
                 </div>
                 <div className="p-4">
                   <div className="space-y-4">
-                    {order.items.map((item) => (
-                      <div key={item.id} className="flex items-center">
+                    {order.items.map((item, idx) => (
+                      <div key={idx} className="flex items-center">
                         <div className="relative w-16 h-16 rounded overflow-hidden mr-4">
                           <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
                         </div>
@@ -277,8 +225,10 @@ function OrderItem({ order }: { order: Order }) {
                           <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-indigo-900 dark:text-indigo-400">₹{item.price.toFixed(2)}</p>
-                          <p className="text-sm text-gray-500">₹{(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="font-medium text-indigo-900 dark:text-indigo-400">₹{item.price?.toFixed(2)}</p>
+                          <p className="text-sm text-gray-500">
+                            ₹{((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -292,11 +242,17 @@ function OrderItem({ order }: { order: Order }) {
                     Shipping Address
                   </div>
                   <div className="p-4">
-                    <p>John Smith</p>
-                    <p>123 Main Street</p>
-                    <p>Apt 4B</p>
-                    <p>London, EC1A 1BB</p>
-                    <p>United Kingdom</p>
+                    {order.shippingAddress ? (
+                      <>
+                        <p>{order.shippingAddress.name}</p>
+                        <p>{order.shippingAddress.line1}</p>
+                        {order.shippingAddress.line2 && <p>{order.shippingAddress.line2}</p>}
+                        <p>{order.shippingAddress.city}, {order.shippingAddress.postalCode}</p>
+                        <p>{order.shippingAddress.country}</p>
+                      </>
+                    ) : (
+                      <p className="text-gray-500">No shipping address available</p>
+                    )}
                   </div>
                 </div>
 
@@ -307,11 +263,15 @@ function OrderItem({ order }: { order: Order }) {
                   <div className="p-4">
                     <div className="flex justify-between mb-2">
                       <span className="text-gray-500">Subtotal</span>
-                      <span className="text-indigo-900 dark:text-indigo-400">₹{(order.total - 4.99).toFixed(2)}</span>
+                      <span className="text-indigo-900 dark:text-indigo-400">
+                        ₹{(order.subtotal || 0).toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between mb-2">
                       <span className="text-gray-500">Shipping</span>
-                      <span className="text-indigo-900 dark:text-indigo-400">₹4.99</span>
+                      <span className="text-indigo-900 dark:text-indigo-400">
+                        ₹{(order.shippingCost || 0).toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between font-medium">
                       <span className="text-indigo-900 dark:text-indigo-400">Total</span>
@@ -328,7 +288,7 @@ function OrderItem({ order }: { order: Order }) {
                 >
                   Track Order
                 </Button>
-                {order.status === "Delivered" && (
+                {order.status === "delivered" && (
                   <Button className="bg-indigo-600 hover:bg-indigo-700">Leave Review</Button>
                 )}
               </div>
@@ -344,7 +304,7 @@ function OrderItem({ order }: { order: Order }) {
           Track Order
         </Button>
 
-        {order.status === "Delivered" && (
+        {order.status === "delivered" && (
           <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
             Buy Again
           </Button>

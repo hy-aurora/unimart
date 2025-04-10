@@ -69,6 +69,7 @@ const handleClerkWebhook = httpAction(async (ctx, req) => {
           await ctx.runMutation(internal.user.create, {
               username: event.data.username ?? "", // Use the username from the event data or an empty string
               imageUrl: event.data.image_url, // User's profile image URL
+              isActive: true, // User's active status from public metadata or default to false
               clerkId: event.data.id, // Clerk ID for the user
               email: event.data.email_addresses[0]?.email_address || "", // Use the first email address
               password: "", // Handle password securely (empty in this case)

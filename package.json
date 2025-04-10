@@ -44,6 +44,7 @@
     "react-dom": "^19.1.0",
     "recharts": "^2.15.2",
     "sass": "^1.86.3",
+    "sonner": "^2.0.3",
     "svix": "^1.63.1",
     "tailwind-merge": "^2.1.0"
   },
