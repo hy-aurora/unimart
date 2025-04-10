@@ -26,13 +26,17 @@ export default function SchoolsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCity, setSelectedCity] = React.useState("");
 
-  const schools = useQuery(api.schools.getAll) || []; // Fetch schools using useQuery
+  // Fetch schools and their product counts dynamically
+  const schools = useQuery(api.schools.getAll) || [];
+  const products = useQuery(api.products.getAll) || [];
 
+  // Extract unique cities from schools
   const cities = React.useMemo(
     () => Array.from(new Set(schools.map((school) => school.location))),
     [schools]
   );
 
+  // Filter schools based on search query and selected city
   const filteredSchools = React.useMemo(() => {
     return schools.filter((school) => {
       const matchesSearch =
@@ -42,6 +46,16 @@ export default function SchoolsPage() {
       return matchesSearch && matchesCity;
     });
   }, [schools, searchQuery, selectedCity]);
+
+  // Count products for each school
+  const schoolWithProductCounts = React.useMemo(() => {
+    return filteredSchools.map((school) => {
+      const productCount = products.filter(
+        (product) => product.schoolId === school._id
+      ).length;
+      return { ...school, productCount };
+    });
+  }, [filteredSchools, products]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -71,16 +85,16 @@ export default function SchoolsPage() {
           >
             <SelectItem key="">All Cities</SelectItem>
             <>
-              {cities.map((city) => (
-                <SelectItem key={city}>{city}</SelectItem>
-              ))}
+            {cities.map((city) => (
+              <SelectItem key={city}>{city}</SelectItem>
+            ))}
             </>
           </Select>
         </CardBody>
       </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredSchools.map((school) => (
+        {schoolWithProductCounts.map((school) => (
           <Card
             key={school._id}
             isPressable
@@ -106,13 +120,16 @@ export default function SchoolsPage() {
                   <Icon icon="lucide:map-pin" className="mr-1 h-4 w-4" />
                   {school.location}
                 </p>
+                <p className="text-sm text-default-500">
+                  {school.productCount} Products Available
+                </p>
               </div>
             </CardBody>
           </Card>
         ))}
       </div>
 
-      {filteredSchools.length === 0 && (
+      {schoolWithProductCounts.length === 0 && (
         <div className="text-center py-12">
           <Icon
             icon="lucide:school"

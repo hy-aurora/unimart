@@ -1,235 +1,184 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Icon } from "@iconify/react";
-import {
-  Button,
-  Input,
-  Checkbox,
-  Select,
-  SelectItem,
-  Badge,
-  Slider,
-} from "@heroui/react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import React from 'react';
+import { Button, Input, Card, CardBody, Badge, Checkbox, Select, SelectItem, Slider } from '@heroui/react';
+import { Icon } from '@iconify/react';
+import { motion } from 'framer-motion';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  imageUrl: string;
+  isNew?: boolean;
+  isSale?: boolean;
+}
 
 export default function CatalogPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
-  const [sortOption, setSortOption] = useState<{ value: string; label: string }[]>([
-    { value: "featured", label: "Featured" },
-    { value: "priceLowToHigh", label: "Price: Low to High" },
-    { value: "priceHighToLow", label: "Price: High to Low" },
-    { value: "newest", label: "Newest" },
-  ]);
-  const [priceRange, setPriceRange] = useState([0, 100]);
-  const [filteredProducts, setFilteredProducts] = useState<
-    Array<{
-      _id: Id<"products">;
-      _creationTime: number;
-      originalPrice?: number;
-      rating?: number;
-      ratingCount?: number;
-      inStock?: boolean;
-      isNew?: boolean;
-      name: string;
-      category: string;
-      price: number;
-      imageUrls?: string; // Optional image property
-      isSale?: boolean;
-      allowCustomSize: boolean;
-    }>
-  >([]);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedCategories, setSelectedCategories] = React.useState<string[]>([]);
+  const [priceRange, setPriceRange] = React.useState([0, 100]);
+  const [sortBy, setSortBy] = React.useState("featured");
 
-  const products = useQuery(api.products.getAll) || [];
-  const categories = Array.from(
-    new Set(products.map((product) => product.category))
-  );
+  // Mock data - replace with your actual data
+  const categories = [
+    "Blazers",
+    "Shirts",
+    "Trousers",
+    "Skirts",
+    "PE Kit",
+    "Accessories"
+  ];
 
-  useEffect(() => {
-    let result = [...products];
+  const products: Product[] = [
+    {
+      id: "1",
+      name: "School Blazer",
+      price: 49.99,
+      category: "Blazers",
+      imageUrl: "https://img.heroui.chat/image/fashion?w=400&h=500&u=41",
+      isNew: true
+    },
+    // Add more products...
+  ];
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (product) =>
-          product.name?.toLowerCase().includes(query) ||
-          product.category?.toLowerCase().includes(query)
-      );
-    }
-
-    if (activeFilters.categories?.length) {
-      result = result.filter((product) =>
-        activeFilters.categories.includes(product.category?.toLowerCase())
-      );
-    }
-
-    if (activeFilters.priceRange) {
-      const [min, max] = activeFilters.priceRange;
-      result = result.filter(
-        (product) => (product.price || 0) >= min && (product.price || 0) <= max
-      );
-    }
-
-    setFilteredProducts(
-      result.map((product) => ({
-        ...product,
-        imageUrls: product.imageUrls?.[0] ?? "/placeholder.webp", // Use the first image or a placeholder
-        category: product.category ?? "Uncategorized", // Provide a default category
-      }))
+  const handleCategoryToggle = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
     );
-  }, [searchQuery, activeFilters, products]);
-
-  const handlePriceRangeChange = (value: number | number[]) => {
-    if (Array.isArray(value)) {
-      setPriceRange(value);
-      setActiveFilters((prev) => ({
-        ...prev,
-        priceRange: value,
-      }));
-    }
-  };
-
-  const toggleCategoryFilter = (category: string) => {
-    setActiveFilters((prev) => {
-      const currentCategories = prev.categories || [];
-      const categoryLower = category.toLowerCase();
-
-      return {
-        ...prev,
-        categories: currentCategories.includes(categoryLower)
-          ? currentCategories.filter((c: string) => c !== categoryLower)
-          : [...currentCategories, categoryLower],
-      };
-    });
-  };
-
-  const resetFilters = () => {
-    setActiveFilters({});
-    setPriceRange([0, 100]);
-    setSearchQuery("");
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         <h1 className="text-3xl font-bold mb-2">Product Catalog</h1>
-        <p className="text-default-600">
-          Browse our collection of high-quality products
+        <p className="text-gray-600 dark:text-dark-gray-400">
+          Browse our collection of high-quality school uniforms
         </p>
-      </div>
+      </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Filters Section */}
-        <div className="w-full lg:w-64 flex-shrink-0">
-          <div className="sticky top-4 space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Filters</h2>
-              <Button
-                size="sm"
-                variant="light"
-                onPress={resetFilters}
-                isDisabled={Object.keys(activeFilters).length === 0}
-              >
-                Reset all
-              </Button>
-            </div>
+        <Card className="lg:w-64 h-fit dark:bg-dark-card dark:border-dark-border">
+          <CardBody className="space-y-6">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold">Filters</h2>
+                <Button
+                  size="sm"
+                  variant="light"
+                  onPress={() => {
+                    setSelectedCategories([]);
+                    setPriceRange([0, 100]);
+                  }}
+                >
+                  Reset all
+                </Button>
+              </div>
 
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-medium mb-3">Categories</h3>
-                <div className="space-y-2">
-                  {categories.map((category) => (
-                    <div key={category} className="flex items-center gap-2">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-medium mb-3">Categories</h3>
+                  <div className="space-y-2">
+                    {categories.map(category => (
                       <Checkbox
-                        isSelected={activeFilters.categories?.includes(
-                          (category ?? "").toLowerCase()
-                        )}
-                        onValueChange={() => category && toggleCategoryFilter(category)}
+                        key={category}
+                        isSelected={selectedCategories.includes(category)}
+                        onValueChange={() => handleCategoryToggle(category)}
                       >
-                        <span className="text-sm">{category}</span>
+                        {category}
                       </Checkbox>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <h3 className="text-sm font-medium mb-3">Price Range</h3>
-                <Slider
-                  label="Price"
-                  step={1}
-                  minValue={0}
-                  maxValue={100}
-                  value={priceRange}
-                  onChange={handlePriceRangeChange}
-                  className="max-w-full"
-                />
-                <div className="flex justify-between mt-2">
-                  <span className="text-sm text-default-600">
-                    ${priceRange[0]}
-                  </span>
-                  <span className="text-sm text-default-600">
-                    ${priceRange[1]}
-                  </span>
+                <div>
+                  <h3 className="text-sm font-medium mb-3">Price Range</h3>
+                  <Slider
+                    label="Price"
+                    step={1}
+                    minValue={0}
+                    maxValue={100}
+                    value={priceRange}
+                    onChange={(value) => {
+                      if (Array.isArray(value)) {
+                        setPriceRange(value);
+                      }
+                    }}
+                    className="max-w-full"
+                  />
+                  <div className="flex justify-between mt-2">
+                    <span className="text-sm text-gray-600">
+                      £{priceRange[0]}
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      £{priceRange[1]}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardBody>
+        </Card>
 
-        {/* Products Grid */}
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <Input
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              startContent={
-                <Icon icon="lucide:search" className="text-default-400" />
-              }
-              className="w-full sm:max-w-xs"
+              startContent={<Icon icon="lucide:search" />}
+              className="w-full sm:max-w-xs dark:bg-dark-input dark:text-dark-foreground dark:placeholder-dark-gray-400"
             />
 
             <Select
-              className="w-full sm:w-48"
-              selectedKeys={sortOption.map(option => option.value)}
-              onChange={(e) => {
-                const selectedOption = sortOption.find(option => option.value === e.target.value);
-                if (selectedOption) {
-                  setSortOption([selectedOption]);
-                }
-              }}
+              placeholder="Sort by"
+              selectedKeys={[sortBy]}
+              onChange={(e) => setSortBy(e.target.value)}
             >
-              {sortOption.map((option) => (
-                <SelectItem key={option.value} textValue={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              <SelectItem key="featured">Featured</SelectItem>
+              <SelectItem key="priceLowToHigh">Price: Low to High</SelectItem>
+              <SelectItem key="priceHighToLow">Price: High to Low</SelectItem>
+              <SelectItem key="newest">Newest</SelectItem>
             </Select>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <div key={product._id} className="group relative">
-                <div className="aspect-square overflow-hidden rounded-lg bg-default-100">
-                  <img
-                    src={product.imageUrls}
-                    alt={product.name}
-                    className="h-full w-full object-cover object-center group-hover:opacity-75"
-                  />
-                </div>
-                <div className="mt-4 space-y-1">
-                  <h3 className="text-sm font-medium">{product.name}</h3>
-                  <p className="text-sm text-default-600">${product.price}</p>
-                  {product.isSale && (
-                    <Badge color="danger" variant="flat" size="sm">
-                      Sale
-                    </Badge>
-                  )}
-                </div>
-              </div>
+            {products.map(product => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card isPressable className="group">
+                  <div className="aspect-square overflow-hidden">
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                  <CardBody>
+                    <h3 className="font-medium">{product.name}</h3>
+                    <p className="text-primary-600 font-bold">
+                      £{product.price.toFixed(2)}
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                      {product.isNew && (
+                        <Badge color="primary">New</Badge>
+                      )}
+                      {product.isSale && (
+                        <Badge color="danger">Sale</Badge>
+                      )}
+                    </div>
+                  </CardBody>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>

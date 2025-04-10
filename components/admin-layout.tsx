@@ -62,6 +62,11 @@ const navItems = [
     href: "/admin/schools",
     icon: Users, // You can replace this with a more appropriate icon if needed
   },
+  {
+    title: "Categories",
+    href: "/admin/categories",
+    icon: Package,
+  },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

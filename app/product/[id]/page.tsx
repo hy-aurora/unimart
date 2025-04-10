@@ -1,266 +1,222 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { useParams } from "next/navigation";
-import { ArrowLeft, Share2, Star } from "lucide-react";
+"`use client";
+import React from 'react';
+import { Button, Card, CardBody, Badge, Tabs, Tab } from '@heroui/react';
+import { Icon } from '@iconify/react';
+import { motion } from 'framer-motion';
 
-import { Button } from "@heroui/react";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AddToCartForm } from "@/components/add-to-cart-form";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  category: string;
+  school: string;
+  rating: number;
+  reviews: number;
+  imageUrls: string[];
+  sizes: string[];
+  colors: string[];
+}
 
 export default function ProductPage() {
-  const params = useParams();
-  const productId = params.id as string;
+  const [selectedImage, setSelectedImage] = React.useState(0);
+  const [selectedSize, setSelectedSize] = React.useState("");
+  const [selectedColor, setSelectedColor] = React.useState("");
 
-  const product = useQuery(api.products.getProductById, {
-    productId: productId as Id<"products">,
-  }) as {
-    colors: never[];
-    reviews: number;
-    _id: Id<"products">;
-    id?: string;
-    name?: string;
-    price?: number;
-    originalPrice?: number;
-    imageUrls?: string[];
-    rating?: number;
-    ratingCount?: number;
-    inStock?: boolean;
-    isNew?: boolean;
-    isFeatured?: boolean;
-    isSale?: boolean;
-    category?: string;
-    school?: string;
-    description?: string;
-    sizes?: string[];
-    gender?: "boy" | "girl" | "unisex";
-    classLevel?: string;
-    stock?: number;
-    allowCustomSize?: boolean;
-  } | null;
-
-  if (!product) {
-    return <div className="container py-12 text-center">Loading...</div>;
-  }
+  // Mock data - replace with your actual data fetching
+  const product: Product = {
+    id: "1",
+    name: "School Blazer",
+    price: 49.99,
+    description: "Premium quality school blazer with embroidered logo.",
+    category: "Blazers",
+    school: "St. Mary's Academy",
+    rating: 4.5,
+    reviews: 24,
+    imageUrls: [
+      "https://img.heroui.chat/image/fashion?w=600&h=800&u=31",
+      "https://img.heroui.chat/image/fashion?w=600&h=800&u=32",
+      "https://img.heroui.chat/image/fashion?w=600&h=800&u=33",
+      "https://img.heroui.chat/image/fashion?w=600&h=800&u=34"
+    ],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    colors: ["Navy", "Black"]
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Link
-          href={`/schools/1`}
-          className="flex items-center text-sm text-default-500 hover:text-primary"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to {product.school}
-        </Link>
-      </div>
+      <Button
+        variant="light"
+        className="mb-6"
+        startContent={<Icon icon="lucide:arrow-left" />}
+      >
+        Back to {product.school}
+      </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         <div className="space-y-4">
-          <div className="relative aspect-square overflow-hidden rounded-lg border bg-default-100">
-            <Image
-              src={product.imageUrls?.[0] || "/placeholder.svg"}
-              alt={product.name || "Product Image"}
-              fill
-              className="object-cover"
+          <motion.div 
+            className="relative aspect-square overflow-hidden rounded-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <img
+              src={product.imageUrls[selectedImage]}
+              alt={product.name}
+              className="w-full h-full object-cover"
             />
-          </div>
+          </motion.div>
           <div className="grid grid-cols-4 gap-2">
-            {product.imageUrls?.map((image, i) => (
-              <div
+            {product.imageUrls.map((image, i) => (
+              <Card
                 key={i}
-                className="relative aspect-square overflow-hidden rounded-lg border bg-default-100 cursor-pointer"
+                isPressable
+                className={`aspect-square overflow-hidden ${
+                  i === selectedImage ? 'ring-2 ring-primary' : ''
+                }`}
+                onPress={() => setSelectedImage(i)}
               >
-                <Image
-                  src={image || "/placeholder.svg"}
-                  alt={`${product.name} - Image ${i + 1}`}
-                  fill
-                  className="object-cover"
+                <img
+                  src={image}
+                  alt={`${product.name} - View ${i + 1}`}
+                  className="w-full h-full object-cover"
                 />
-              </div>
+              </Card>
             ))}
           </div>
         </div>
 
         <div>
           <div className="mb-6">
-            <p className="text-sm text-default-500 mb-1">{product.category}</p>
-            <h1 className="text-3xl font-bold text-default-900">
+            <Badge color="primary" className="mb-2">{product.category}</Badge>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               {product.name}
             </h1>
-            <div className="flex items-center mt-2">
-              <div className="flex items-center">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${
-                      i < Math.floor(product.rating ?? 0)
-                        ? "fill-amber-400 text-amber-400"
-                        : "fill-default-200 text-default-200"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="ml-2 text-sm text-default-500">
-                {product.rating} ({product.reviews ?? 0} reviews)
+            <div className="flex items-center gap-2">
+              {[...Array(5)].map((_, i) => (
+                <Icon
+                  key={i}
+                  icon="lucide:star"
+                  className={`w-5 h-5 ${
+                    i < Math.floor(product.rating)
+                      ? 'text-yellow-400'
+                      : 'text-gray-300'
+                  }`}
+                />
+              ))}
+              <span className="text-gray-600">
+                ({product.reviews} reviews)
               </span>
             </div>
-            <p className="text-2xl font-bold mt-4 text-primary">
-              £{product.price?.toFixed(2)}
+            <p className="text-2xl font-bold text-primary mt-4">
+              £{product.price.toFixed(2)}
             </p>
           </div>
-          <Separator className="my-6" />
-          <AddToCartForm
-            product={{
-              ...product,
-              id: product._id.toString(),
-              sizes: product.sizes || [],
-              colors: product.colors || [],
-              name: product.name || "Unnamed Product",
-              price: product.price ?? 0,
-              school: product.school || "Unknown School",
-            }}
-          />
 
-          <div className="flex items-center justify-between mt-6">
-            <p className="text-sm text-default-600">School: {product.school}</p>
-            <Button variant="light" size="sm">
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <Tabs defaultValue="description" className="mb-12">
-        <TabsList className="w-full justify-start border-b rounded-none h-auto p-0">
-          <TabsTrigger
-            value="description"
-            className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-10"
-          >
-            Description
-          </TabsTrigger>
-          <TabsTrigger
-            value="details"
-            className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-10"
-          >
-            Details & Care
-          </TabsTrigger>
-          <TabsTrigger
-            value="reviews"
-            className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary h-10"
-          >
-            Reviews ({product.reviews})
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="description" className="pt-4">
-          <p className="text-default-600">{product.description}</p>
-        </TabsContent>
-        <TabsContent value="details" className="pt-4">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium text-default-900">Materials</h3>
-              <p className="text-default-600">65% Polyester, 35% Viscose</p>
-            </div>
-            <div>
-              <h3 className="font-medium text-default-900">
-                Care Instructions
-              </h3>
-              <ul className="list-disc list-inside text-default-600">
-                <li>Machine washable at 40°C</li>
-                <li>Do not bleach</li>
-                <li>Iron on medium heat</li>
-                <li>Do not tumble dry</li>
-                <li>Dry clean if necessary</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium text-default-900">Features</h3>
-              <ul className="list-disc list-inside text-default-600">
-                <li>Embroidered school logo on breast pocket</li>
-                <li>Two front pockets</li>
-                <li>Fully lined</li>
-                <li>Button fastening</li>
-              </ul>
-            </div>
-          </div>
-        </TabsContent>
-        <TabsContent value="reviews" className="pt-4">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
+          <Card className="mb-6 dark:bg-dark-card dark:border-dark-border">
+            <CardBody className="space-y-6">
               <div>
-                <h3 className="font-medium text-default-900">
-                  Customer Reviews
-                </h3>
-                <div className="flex items-center mt-1">
-                  <div className="flex items-center">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(product.rating ?? 0)
-                            ? "fill-amber-400 text-amber-400"
-                            : "fill-default-200 text-default-200"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="ml-2 text-sm text-default-500">
-                    Based on {product.reviews} reviews
-                  </span>
-                </div>
-              </div>
-              <Button className="bg-primary hover:bg-primary-dark">
-                Write a Review
-              </Button>
-            </div>
-
-            <Separator />
-
-            {/* Sample reviews */}
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-default-900">Jane Doe</h4>
-                  <span className="text-sm text-default-500">2 weeks ago</span>
-                </div>
-                <div className="flex items-center">
-                  {Array.from({ length: 5 }).map((_, j) => (
-                    <Star
-                      key={j}
-                      className={`h-4 w-4 ${
-                        j < 4 + (i % 2)
-                          ? "fill-amber-400 text-amber-400"
-                          : "fill-default-200 text-default-200"
-                      }`}
-                    />
+                <h3 className="text-sm font-medium mb-3">Size</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size) => (
+                    <Button
+                      key={size}
+                      variant={selectedSize === size ? "solid" : "bordered"}
+                      color={selectedSize === size ? "primary" : "default"}
+                      onPress={() => setSelectedSize(size)}
+                    >
+                      {size}
+                    </Button>
                   ))}
                 </div>
-                <p className="text-default-600">
-                  Great quality blazer. Fits well and looks smart. My child is
-                  very happy with it.
-                </p>
-                <Separator />
               </div>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
 
-      {/*<div>
-        <h2 className="text-2xl font-bold mb-6 text-default-900">
-          You May Also Like
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {relatedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+              <div>
+                <h3 className="text-sm font-medium mb-3">Color</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors.map((color) => (
+                    <Button
+                      key={color}
+                      variant={selectedColor === color ? "solid" : "bordered"}
+                      color={selectedColor === color ? "primary" : "default"}
+                      onPress={() => setSelectedColor(color)}
+                    >
+                      {color}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                color="primary"
+                size="lg"
+                fullWidth
+                startContent={<Icon icon="lucide:shopping-cart" />}
+              >
+                Add to Cart
+              </Button>
+            </CardBody>
+          </Card>
+
+          <Tabs aria-label="Product information" className="dark:text-dark-foreground">
+            <Tab key="description" title="Description">
+              <Card>
+                <CardBody>
+                  <p className="text-gray-600 dark:text-dark-gray-400">{product.description}</p>
+                </CardBody>
+              </Card>
+            </Tab>
+            <Tab key="details" title="Details & Care">
+              <Card>
+                <CardBody>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-medium mb-2">Materials</h3>
+                      <p className="text-gray-600">65% Polyester, 35% Viscose</p>
+                    </div>
+                    <div>
+                      <h3 className="font-medium mb-2">Care Instructions</h3>
+                      <ul className="list-disc list-inside text-gray-600">
+                        <li>Machine washable at 40°C</li>
+                        <li>Do not bleach</li>
+                        <li>Iron on medium heat</li>
+                        <li>Do not tumble dry</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            </Tab>
+            <Tab key="reviews" title={`Reviews (${product.reviews})`}>
+              <Card>
+                <CardBody>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Icon
+                            key={i}
+                            icon="lucide:star"
+                            className={`w-5 h-5 ${
+                              i < Math.floor(product.rating)
+                                ? 'text-yellow-400'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                        <span className="text-gray-600">
+                          {product.rating} out of 5
+                        </span>
+                      </div>
+                      <Button color="primary">Write a Review</Button>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            </Tab>
+          </Tabs>
         </div>
-      </div>*/}
+      </div>
     </div>
   );
 }

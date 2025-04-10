@@ -1,66 +1,94 @@
 "use client";
 import React from "react";
+import { useParams } from "next/navigation";
+import { Button, Card, CardBody, Badge, Input } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { Button, Card, CardBody, Badge } from "@heroui/react";
-import { ProductCard } from "@/components/product-card";
+import { motion } from "framer-motion";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useParams } from "next/navigation";
 
 export default function SchoolPage() {
-  const params = useParams();
-  const schoolId = params.id as string; // Retrieve the id from route params
+  const { id: schoolId } = useParams(); // Extract school ID from the URL
+  const [selectedCategory, setSelectedCategory] = React.useState("all");
+  const [searchQuery, setSearchQuery] = React.useState("");
 
-  if (!schoolId || schoolId.trim() === "") {
-    return <div>Error: School ID is missing or invalid.</div>; // Handle missing or invalid schoolId
+  // Fetch school details and products using the school ID
+  const school = schoolId
+    ? useQuery(api.schools.getById, { schoolId: schoolId as unknown as Id<"schools"> })
+    : null;
+  const products = schoolId
+    ? useQuery(api.products.getBySchool, { schoolId: schoolId as unknown as Id<"schools"> }) || []
+    : [];
+
+  // Extract unique categories from products
+  const categories = React.useMemo(() => {
+    const uniqueCategories = Array.from(
+      new Set(products.map((product) => product.category))
+    );
+    return uniqueCategories.map((category) => ({ name: category }));
+  }, [products]);
+
+  // Filter products based on selected category and search query
+  const filteredProducts = React.useMemo(() => {
+    return products.filter((product) => {
+      const matchesCategory =
+        selectedCategory === "all" || product.category === selectedCategory;
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [products, selectedCategory, searchQuery]);
+
+  // Handle loading or invalid state
+  if (!schoolId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-red-600">Invalid school ID provided.</p>
+      </div>
+    );
   }
 
-  const school = useQuery(api.schools.getWithProducts, {
-    schoolId: schoolId as Id<"schools">,
-  }); // Fetch school with products
-  const categories = useQuery(api.categories.getAll) || []; // Fetch categories from backend
-  const [selectedCategory, setSelectedCategory] = React.useState("all");
-
-  const filteredProducts = React.useMemo(() => {
-    if (!school) return [];
-    let filtered = [...school.products];
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
-    return filtered;
-  }, [school, selectedCategory]);
-
   if (!school) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-gray-600">Loading school details...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background dark:bg-dark-background">
       <div className="relative h-[320px] overflow-hidden">
-        <img
-          src={school.bannerUrl}
-          alt={school.name}
-          className="w-full h-full object-cover"
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${school?.bannerUrl})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary-900/70 to-primary-800/20" />
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="container mx-auto flex items-end gap-6">
-            <div className="bg-white rounded-xl p-2 shadow-lg">
+            <Card className="w-28 h-28 p-2">
               <img
-                src={school.logoUrl}
-                alt={school.name}
-                className="w-24 h-24 object-contain"
+                src={school?.logoUrl}
+                alt={school?.name}
+                className="w-full h-full object-contain"
               />
-            </div>
+            </Card>
             <div className="text-white flex-1">
-              <h1 className="text-3xl font-bold mb-2">{school.name}</h1>
-              <div className="flex gap-4">
-                <Badge variant="flat" color="secondary" className="gap-1">
-                  <Icon icon="lucide:map-pin" />
-                  {school.location}
-                </Badge>
-              </div>
+              <motion.h1
+                className="text-3xl font-bold mb-2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {school?.name}
+              </motion.h1>
+              <Badge color="primary">
+                <div className="flex items-center gap-1">
+                  <Icon icon="lucide:map-pin" className="w-4 h-4" />
+                  {school?.location}
+                </div>
+              </Badge>
             </div>
           </div>
         </div>
@@ -70,12 +98,14 @@ export default function SchoolPage() {
         <Card className="mb-8">
           <CardBody>
             <h2 className="text-xl font-bold mb-4">About the School Uniform</h2>
-            <p className="text-default-600">{school.description}</p>
+            <p className="text-gray-600 dark:text-dark-gray-400">
+              {school?.description}
+            </p>
           </CardBody>
         </Card>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          <Card className="lg:w-64 h-fit">
+          <Card className="lg:w-64 h-fit dark:bg-dark-card dark:border-dark-border">
             <CardBody>
               <h3 className="font-bold mb-4">Categories</h3>
               <div className="space-y-1">
@@ -98,7 +128,7 @@ export default function SchoolPage() {
                     color={
                       selectedCategory === category.name ? "primary" : "default"
                     }
-                    onPress={() => setSelectedCategory(category.name)}
+                    onPress={() => setSelectedCategory(category.name || "all")}
                     className="justify-start"
                   >
                     {category.name}
@@ -116,19 +146,31 @@ export default function SchoolPage() {
                     ? "All Products"
                     : selectedCategory}
                 </h2>
+                <Input
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  startContent={<Icon icon="lucide:search" />}
+                  className="max-w-xs"
+                />
               </CardBody>
             </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={{
-                    ...product,
-                    school: school.name,
-                    image: product.imageUrls[0] || "",
-                  }}
-                />
+                <Card key={product.id} isHoverable isPressable>
+                  <CardBody>
+                    <img
+                      src={product.imageUrls[0]}
+                      alt={product.name}
+                      className="w-full h-40 object-cover rounded-lg mb-4"
+                    />
+                    <h3 className="font-bold text-lg">{product.name}</h3>
+                    <p className="text-primary font-semibold">
+                      ${product.price.toFixed(2)}
+                    </p>
+                  </CardBody>
+                </Card>
               ))}
             </div>
           </div>

@@ -55,6 +55,7 @@ import imageCompression from "browser-image-compression";
 export default function ProductsPage() {
   const products = useQuery(api.products.getAll) || [];
   const schools = useQuery(api.schools.getAll) || [];
+  const categories = useQuery(api.categories.getAllCategories) || [];
   const addProduct = useMutation(api.products.add);
   const updateProduct = useMutation(api.products.modify);
   const deleteProduct = useMutation(api.products.remove);
@@ -118,7 +119,6 @@ export default function ProductsPage() {
       isFeatured: false, // Example default value
       isSale: false, // Example default value
       category: formState.category,
-      school: "", // Example default value
       description: formState.description,
       sizes: [], // Example default value
       gender: "unisex", // Example default value
@@ -238,14 +238,20 @@ export default function ProductsPage() {
                   <Label htmlFor="category" className="sm:text-right">
                     Category
                   </Label>
-                  <Input
+                  <select
                     id="category"
                     name="category"
                     value={formState.category}
                     onChange={handleInputChange}
-                    className="col-span-1 sm:col-span-3"
-                    placeholder="Category"
-                  />
+                    className="col-span-1 sm:col-span-3 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category._id} value={category.name}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                   <Label htmlFor="stock" className="sm:text-right">

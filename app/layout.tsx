@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import SiteNavbar from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { ThemeProvider } from "@/components/providers/theme-provider";
+// import { ThemeProvider } from "@/components/providers/theme-provider";
 import { NotificationProvider } from "@/components/providers/notification-provider";
 import Provider from "@/components/Provider";
 
@@ -26,12 +26,12 @@ export default function RootLayout({
         className={inter.className}
         suppressHydrationWarning
       >
-        <ThemeProvider
+        {/* <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-        >
+        > */}
           <NotificationProvider>
             <Provider>
               <div className="flex min-h-screen flex-col">
@@ -41,7 +41,7 @@ export default function RootLayout({
               </div>
             </Provider>
           </NotificationProvider>
-        </ThemeProvider>
+        {/* </ThemeProvider> */}
       </body>
     </html>
   );

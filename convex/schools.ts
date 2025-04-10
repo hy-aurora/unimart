@@ -115,3 +115,20 @@ export const getWithProducts = query({
     return { ...school, products };
   },
 });
+
+// Query to get a school ID by name
+export const getIdByName = query({
+  args: {
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const school = await ctx.db
+      .query("schools")
+      .filter((q) => q.eq(q.field("name"), args.name))
+      .first();
+    if (!school) {
+      throw new ConvexError("School not found");
+    }
+    return school._id;
+  },
+});
