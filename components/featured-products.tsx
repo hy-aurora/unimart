@@ -60,7 +60,7 @@ export function FeaturedProducts() {
             <h3 className="font-semibold text-lg mb-2 dark:text-dark-foreground">{product.name}</h3>
             <div className="flex justify-between items-center">
               <span className="text-xl font-bold text-primary-600">
-                £{product.price}
+                ₹{product.price}
               </span>
               <Button 
                 isIconOnly

@@ -42,7 +42,6 @@ export default function SiteNavbar() {
   const pages = [
     { href: "/schools", label: "Schools" },
     { href: "/catalog", label: "Catalog" },
-    { href: "/custom-sizing", label: "Custom Sizing" },
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact Us" },
   ];

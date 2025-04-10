@@ -9,7 +9,8 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
 export default function SchoolPage() {
-  const { id: schoolId } = useParams(); // Extract school ID from the URL
+  const params = useParams();
+  const schoolId = params?.id ? (params.id as string) : null; // Extract school ID from the URL
   const [selectedCategory, setSelectedCategory] = React.useState("all");
   const [searchQuery, setSearchQuery] = React.useState("");
 

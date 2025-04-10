@@ -228,7 +228,7 @@ function OrderItem({ order }: { order: Order }) {
           >
             {order.status}
           </span>
-          <span className="font-medium text-indigo-900 dark:text-indigo-400">£{order.total.toFixed(2)}</span>
+          <span className="font-medium text-indigo-900 dark:text-indigo-400">₹{order.total.toFixed(2)}</span>
         </div>
       </div>
 
@@ -277,8 +277,8 @@ function OrderItem({ order }: { order: Order }) {
                           <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-indigo-900 dark:text-indigo-400">£{item.price.toFixed(2)}</p>
-                          <p className="text-sm text-gray-500">£{(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="font-medium text-indigo-900 dark:text-indigo-400">₹{item.price.toFixed(2)}</p>
+                          <p className="text-sm text-gray-500">₹{(item.price * item.quantity).toFixed(2)}</p>
                         </div>
                       </div>
                     ))}
@@ -307,15 +307,15 @@ function OrderItem({ order }: { order: Order }) {
                   <div className="p-4">
                     <div className="flex justify-between mb-2">
                       <span className="text-gray-500">Subtotal</span>
-                      <span className="text-indigo-900 dark:text-indigo-400">£{(order.total - 4.99).toFixed(2)}</span>
+                      <span className="text-indigo-900 dark:text-indigo-400">₹{(order.total - 4.99).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between mb-2">
                       <span className="text-gray-500">Shipping</span>
-                      <span className="text-indigo-900 dark:text-indigo-400">£4.99</span>
+                      <span className="text-indigo-900 dark:text-indigo-400">₹4.99</span>
                     </div>
                     <div className="flex justify-between font-medium">
                       <span className="text-indigo-900 dark:text-indigo-400">Total</span>
-                      <span className="text-indigo-700 dark:text-indigo-400">£{order.total.toFixed(2)}</span>
+                      <span className="text-indigo-700 dark:text-indigo-400">₹{order.total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

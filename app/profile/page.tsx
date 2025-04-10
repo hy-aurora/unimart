@@ -136,7 +136,7 @@ export default function ProfilePage() {
                         <p className="text-sm text-gray-500">{order.date}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium text-indigo-900 dark:text-indigo-400">£{order.total.toFixed(2)}</p>
+                        <p className="font-medium text-indigo-900 dark:text-indigo-400">₹{order.total.toFixed(2)}</p>
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${
                             order.status === "Delivered"

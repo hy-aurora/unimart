@@ -43,7 +43,7 @@ export default function SettingsPage() {
   const [storeName, setStoreName] = useState("UniMart School Uniforms");
   const [storeEmail, setStoreEmail] = useState("info@unimart.com");
   const [storePhone, setStorePhone] = useState("+44 123 456 7890");
-  const [currencySymbol, setCurrencySymbol] = useState("£");
+  const [currencySymbol, setCurrencySymbol] = useState("₹");
   const [taxRate, setTaxRate] = useState("20");
   
   // Email notification settings
@@ -453,11 +453,11 @@ export default function SettingsPage() {
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="standard-cost">Cost (£)</Label>
+                          <Label htmlFor="standard-cost">Cost (₹)</Label>
                           <Input id="standard-cost" type="number" defaultValue="4.99" />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="standard-free-threshold">Free Shipping Threshold (£)</Label>
+                          <Label htmlFor="standard-free-threshold">Free Shipping Threshold (₹)</Label>
                           <Input id="standard-free-threshold" type="number" defaultValue="75.00" />
                         </div>
                       </div>
@@ -475,11 +475,11 @@ export default function SettingsPage() {
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="express-cost">Cost (£)</Label>
+                          <Label htmlFor="express-cost">Cost (₹)</Label>
                           <Input id="express-cost" type="number" defaultValue="9.99" />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="express-free-threshold">Free Shipping Threshold (£)</Label>
+                          <Label htmlFor="express-free-threshold">Free Shipping Threshold (₹)</Label>
                           <Input id="express-free-threshold" type="number" defaultValue="150.00" />
                         </div>
                       </div>
@@ -497,11 +497,11 @@ export default function SettingsPage() {
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="school-cost">Cost (£)</Label>
+                          <Label htmlFor="school-cost">Cost (₹)</Label>
                           <Input id="school-cost" type="number" defaultValue="0.00" />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="school-min-order">Minimum Order Value (£)</Label>
+                          <Label htmlFor="school-min-order">Minimum Order Value (₹)</Label>
                           <Input id="school-min-order" type="number" defaultValue="50.00" />
                         </div>
                       </div>

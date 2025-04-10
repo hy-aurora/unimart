@@ -84,7 +84,7 @@ export default function AdminDashboard() {
       id: 3,
       type: "payment",
       title: "Payment received",
-      message: "Payment of £210.75 received for order #ORD-004",
+      message: "Payment of ₹210.75 received for order #ORD-004",
       time: "3 hours ago",
       read: true,
     },
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">£45,231.89</div>
+                    <div className="text-2xl font-bold">₹45,231.89</div>
                     <div className="flex items-center text-xs text-green-500">
                       <ArrowUpRight className="mr-1 h-4 w-4" />
                       <span>+20.1% from last month</span>
@@ -273,7 +273,7 @@ export default function AdminDashboard() {
                               }}></div>
                             </div>
                             <div className="text-sm font-medium">
-                              £{(index + 1) * 1500}
+                              ₹{(index + 1) * 1500}
                             </div>
                           </div>
                         ))}
@@ -298,7 +298,7 @@ export default function AdminDashboard() {
                             <span className="text-sm font-medium">{product.name}</span>
                             <span className="text-xs text-muted-foreground">{product.sales} units</span>
                           </div>
-                          <span className="font-medium">£{product.revenue}</span>
+                          <span className="font-medium">₹{product.revenue}</span>
                         </div>
                       ))}
                     </div>
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="font-medium">£{order.total.toFixed(2)}</div>
+                            <div className="font-medium">₹{order.total.toFixed(2)}</div>
                             <div
                               className={`rounded-full px-2 py-1 text-xs ${
                                 order.status === "Delivered"
@@ -458,7 +458,7 @@ export default function AdminDashboard() {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">£78.92</div>
+                    <div className="text-2xl font-bold">₹78.92</div>
                     <div className="flex items-center text-xs text-red-500">
                       <ArrowDownRight className="mr-1 h-4 w-4" />
                       <span>-0.5% from last month</span>
@@ -529,7 +529,7 @@ export default function AdminDashboard() {
                                   </div>
                                 </div>
                                 <div className="w-20 text-right text-sm font-medium">
-                                  £{data.value.toLocaleString()}
+                                  ₹{data.value.toLocaleString()}
                                 </div>
                               </div>
                             ))}
@@ -646,7 +646,7 @@ export default function AdminDashboard() {
                         <div className="font-medium">{product.name}</div>
                         <div className="flex space-x-4">
                           <div className="w-[80px] text-center">{product.sales}</div>
-                          <div className="w-[80px] text-center">£{product.revenue}</div>
+                          <div className="w-[80px] text-center">₹{product.revenue}</div>
                           <div className="w-[80px] text-center text-green-500">+{Math.floor(15 - index * 2)}%</div>
                           <div className="w-[100px] text-center">
                             <div className="h-2 w-full rounded-full bg-muted">

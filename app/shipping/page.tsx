@@ -21,10 +21,10 @@ export default function ShippingPage() {
               <div>
                 <h3 className="font-bold text-indigo-900 dark:text-indigo-400 mb-2">Delivery Options</h3>
                 <ul className="space-y-2 text-gray-600 dark:text-gray-300">
-                  <li>• Standard Delivery (3-5 business days) - £4.99</li>
-                  <li>• Express Delivery (1-2 business days) - £9.99</li>
+                  <li>• Standard Delivery (3-5 business days) - ₹4.99</li>
+                  <li>• Express Delivery (1-2 business days) - ₹9.99</li>
                   <li>• School Delivery (Free)</li>
-                  <li>• Free shipping on orders over £50</li>
+                  <li>• Free shipping on orders over ₹50</li>
                 </ul>
               </div>
             </div>

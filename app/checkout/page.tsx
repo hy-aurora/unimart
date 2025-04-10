@@ -148,7 +148,7 @@ export default function CheckoutPage() {
                       Standard Delivery (3-5 business days)
                     </Label>
                   </div>
-                  <span className="font-medium text-indigo-900 dark:text-indigo-300">£4.99</span>
+                  <span className="font-medium text-indigo-900 dark:text-indigo-300">₹4.99</span>
                 </div>
                 <div className="flex items-center justify-between border p-4 rounded-md mb-2">
                   <div className="flex items-center">
@@ -157,7 +157,7 @@ export default function CheckoutPage() {
                       Express Delivery (1-2 business days)
                     </Label>
                   </div>
-                  <span className="font-medium text-indigo-900 dark:text-indigo-300">£9.99</span>
+                  <span className="font-medium text-indigo-900 dark:text-indigo-300">₹9.99</span>
                 </div>
                 <div className="flex items-center justify-between border p-4 rounded-md">
                   <div className="flex items-center">
@@ -166,7 +166,7 @@ export default function CheckoutPage() {
                       School Delivery (Free)
                     </Label>
                   </div>
-                  <span className="font-medium text-indigo-900 dark:text-indigo-300">£0.00</span>
+                  <span className="font-medium text-indigo-900 dark:text-indigo-300">₹0.00</span>
                 </div>
               </RadioGroup>
             </div>
@@ -276,7 +276,7 @@ export default function CheckoutPage() {
                     <div className="flex justify-between mt-1">
                       <span className="text-sm">Qty: {item.quantity}</span>
                       <span className="font-medium text-indigo-900 dark:text-indigo-300">
-                        £{(item.price * item.quantity).toFixed(2)}
+                        ₹{(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -289,11 +289,11 @@ export default function CheckoutPage() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-gray-500">Subtotal</span>
-                <span className="text-indigo-900 dark:text-indigo-300">£{subtotal.toFixed(2)}</span>
+                <span className="text-indigo-900 dark:text-indigo-300">₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Shipping</span>
-                <span className="text-indigo-900 dark:text-indigo-300">£{shipping.toFixed(2)}</span>
+                <span className="text-indigo-900 dark:text-indigo-300">₹{shipping.toFixed(2)}</span>
               </div>
             </div>
 
@@ -301,7 +301,7 @@ export default function CheckoutPage() {
 
             <div className="flex justify-between font-bold mb-6">
               <span className="text-indigo-900 dark:text-indigo-300">Total</span>
-              <span className="text-indigo-700 dark:text-indigo-400">£{total.toFixed(2)}</span>
+              <span className="text-indigo-700 dark:text-indigo-400">₹{total.toFixed(2)}</span>
             </div>
 
             <Button className="w-full bg-indigo-600 hover:bg-indigo-700" size="lg">

@@ -212,7 +212,7 @@ export default function OrdersPage() {
                                                             <TableCell>{order.customer}</TableCell>
                                                             <TableCell>{order.date}</TableCell>
                                                             <TableCell>{order.items}</TableCell>
-                                                            <TableCell>£{order.total.toFixed(2)}</TableCell>
+                                                            <TableCell>₹{order.total.toFixed(2)}</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.status)}`}>
                                                                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}

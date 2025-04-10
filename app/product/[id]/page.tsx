@@ -1,4 +1,5 @@
-"`use client";
+"use client";
+
 import React from 'react';
 import { Button, Card, CardBody, Badge, Tabs, Tab } from '@heroui/react';
 import { Icon } from '@iconify/react';
@@ -88,7 +89,7 @@ export default function ProductPage() {
               </span>
             </div>
             <p className="text-2xl font-bold text-primary mt-4">
-              £{product.price.toFixed(2)}
+              ₹{product.price.toFixed(2)}
             </p>
           </div>
 

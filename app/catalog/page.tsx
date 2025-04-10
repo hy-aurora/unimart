@@ -88,10 +88,10 @@ export default function CatalogPage() {
                   />
                   <div className="flex justify-between mt-2">
                     <span className="text-sm text-gray-600">
-                      £{priceRange[0]}
+                      ₹{priceRange[0]}
                     </span>
                     <span className="text-sm text-gray-600">
-                      £{priceRange[1]}
+                      ₹{priceRange[1]}
                     </span>
                   </div>
                 </div>
@@ -140,7 +140,7 @@ export default function CatalogPage() {
                   <CardBody>
                     <h3 className="font-medium">{product.name}</h3>
                     <p className="text-primary-600 font-bold">
-                      £{product.price.toFixed(2)}
+                      ₹{product.price.toFixed(2)}
                     </p>
                     <div className="flex gap-2 mt-2">
                       {product.isNew && (

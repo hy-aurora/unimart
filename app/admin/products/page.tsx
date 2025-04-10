@@ -32,15 +32,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -49,6 +40,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { GenericId } from "convex/values";
 import imageCompression from "browser-image-compression";
 
@@ -61,23 +53,48 @@ export default function ProductsPage() {
   const deleteProduct = useMutation(api.products.remove);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<
-    null | (typeof products)[0]
-  >(null);
+  const [selectedProduct, setSelectedProduct] = useState<null | (typeof products)[0]>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewProduct, setIsNewProduct] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Extended form state to cover all product attributes
   const [formState, setFormState] = useState({
     name: "",
     price: "",
+    originalPrice: "",
     category: "",
     stock: "",
     description: "",
-    image: null,
-    schoolId: "", // Initialize schoolId in formState
+    schoolId: "",
+    inStock: true,
+    isNew: false,
+    isFeatured: false,
+    isSale: false,
+    sizes: [] as string[],
+    gender: "unisex" as "boy" | "girl" | "unisex",
+    classLevel: "",
+    allowCustomSize: false,
   });
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const handleInputChange = (e: { target: { name: any; value: any } }) => {
-    const { name, value } = e.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
+  const handleInputChange = (e: { target: { name: string; value: any; type?: string; checked?: boolean } }) => {
+    const { name, value, type, checked } = e.target;
+    if (type === "checkbox") {
+      setFormState((prev) => ({ ...prev, [name]: checked }));
+    } else {
+      setFormState((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSizeToggle = (size: string) => {
+    setFormState(prev => {
+      const sizes = [...prev.sizes];
+      if (sizes.includes(size)) {
+        return { ...prev, sizes: sizes.filter(s => s !== size) };
+      } else {
+        return { ...prev, sizes: [...sizes, size] };
+      }
+    });
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,8 +102,8 @@ export default function ProductsPage() {
     if (file) {
       try {
         const compressedFile = await imageCompression(file, {
-          maxSizeMB: 0.8, // Compress to under 0.8 MiB to ensure it's below 1 MiB
-          maxWidthOrHeight: 1024, // Resize to a maximum dimension of 1024px
+          maxSizeMB: 0.8,
+          maxWidthOrHeight: 1024,
           useWebWorker: true,
         });
         const reader = new FileReader();
@@ -100,79 +117,108 @@ export default function ProductsPage() {
     }
   };
 
-  const handleAddProduct = async () => {
-    let imageUrls: string[] = [];
-    if (selectedImage) {
-      imageUrls = [selectedImage]; // Use the selected image directly
-    }
-
-    await addProduct({
-      id: "", // Example default value
-      name: formState.name,
-      price: parseFloat(formState.price),
-      originalPrice: parseFloat(formState.price), // Example default value
-      imageUrls, // Use the selected image
-      rating: 0, // Example default value
-      ratingCount: 0, // Example default value
-      inStock: true, // Example default value
-      isNew: true, // Example default value
-      isFeatured: false, // Example default value
-      isSale: false, // Example default value
-      category: formState.category,
-      description: formState.description,
-      sizes: [], // Example default value
-      gender: "unisex", // Example default value
-      classLevel: "", // Example default value
-      schoolId: formState.schoolId as GenericId<"schools">, // Convert to the correct type
-      stock: parseInt(formState.stock, 10),
-      allowCustomSize: false, // Example default value
-      createdAt: Date.now(),
-    });
-
-    setFormState({
-      name: "",
-      price: "",
-      category: "",
-      stock: "",
-      description: "",
-      image: null,
-      schoolId: "", // Reset schoolId
-    });
-    setSelectedImage(null);
-  };
-
-  const handleUpdateProduct = async () => {
-    let imageUrls: string[] = [];
-    if (selectedImage) {
-      imageUrls = [selectedImage]; // Use the selected image directly
-    }
-
-    const updates = {
-      productId: selectedProduct?._id as GenericId<"products">,
-      name: formState.name,
-      price: parseFloat(formState.price),
-      category: formState.category,
-      stock: parseInt(formState.stock, 10),
-      description: formState.description,
-      imageUrls, // Use the selected image
-    };
-
-    if (updates.productId) {
-      await updateProduct(updates);
-    } else {
-      console.error("Invalid productId");
-    }
+  const openAddProductModal = () => {
+    setIsNewProduct(true);
     setSelectedProduct(null);
     setFormState({
       name: "",
       price: "",
+      originalPrice: "",
       category: "",
       stock: "",
       description: "",
-      image: null,
-      schoolId: "", // Reset schoolId
+      schoolId: "",
+      inStock: true,
+      isNew: true,
+      isFeatured: false,
+      isSale: false,
+      sizes: [],
+      gender: "unisex",
+      classLevel: "",
+      allowCustomSize: false,
     });
     setSelectedImage(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditProductModal = (product: (typeof products)[0]) => {
+    setIsNewProduct(false);
+    setSelectedProduct(product);
+    setFormState({
+      name: product.name,
+      price: product.price.toString(),
+      originalPrice: product.originalPrice?.toString() || "",
+      category: product.category || "",
+      stock: product.stock.toString(),
+      description: product.description,
+      schoolId: product.schoolId,
+      inStock: product.inStock !== undefined ? product.inStock : true,
+      isNew: product.isNew || false,
+      isFeatured: product.isFeatured || false,
+      isSale: product.isSale || false,
+      sizes: product.sizes || [],
+      gender: product.gender,
+      classLevel: product.classLevel || "",
+      allowCustomSize: product.allowCustomSize,
+    });
+    setSelectedImage(product.imageUrls[0] || null);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveProduct = async () => {
+    // Prepare imageUrls array
+    let imageUrls: string[] = [];
+    if (selectedImage) {
+      imageUrls = [selectedImage];
+    }
+
+    if (isNewProduct) {
+      // Add new product
+      await addProduct({
+        id: Math.random().toString(36).substring(2, 9), // Generate a random ID
+        name: formState.name,
+        price: parseFloat(formState.price),
+        originalPrice: formState.originalPrice ? parseFloat(formState.originalPrice) : undefined,
+        imageUrls,
+        rating: 0,
+        ratingCount: 0,
+        inStock: formState.inStock,
+        isNew: formState.isNew,
+        isFeatured: formState.isFeatured,
+        isSale: formState.isSale,
+        category: formState.category,
+        description: formState.description,
+        sizes: formState.sizes,
+        gender: formState.gender,
+        classLevel: formState.classLevel,
+        schoolId: formState.schoolId as GenericId<"schools">,
+        stock: parseInt(formState.stock, 10),
+        allowCustomSize: formState.allowCustomSize,
+        createdAt: Date.now(),
+      });
+    } else if (selectedProduct) {
+      // Update existing product
+      await updateProduct({
+        productId: selectedProduct._id as GenericId<"products">,
+        name: formState.name,
+        price: parseFloat(formState.price),
+        originalPrice: formState.originalPrice ? parseFloat(formState.originalPrice) : undefined,
+        imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+        inStock: formState.inStock,
+        isNew: formState.isNew,
+        isFeatured: formState.isFeatured,
+        isSale: formState.isSale,
+        category: formState.category,
+        description: formState.description,
+        sizes: formState.sizes,
+        gender: formState.gender,
+        classLevel: formState.classLevel,
+        stock: parseInt(formState.stock, 10),
+        allowCustomSize: formState.allowCustomSize,
+      });
+    }
+
+    setIsModalOpen(false);
   };
 
   const handleDeleteProduct = async (productId: GenericId<"products">) => {
@@ -183,154 +229,18 @@ export default function ProductsPage() {
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Available sizes for the size selector
+  const availableSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+
   return (
     <AdminLayout>
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h2 className="text-3xl font-bold tracking-tight">Products</h2>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Product
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {selectedProduct ? "Edit Product" : "Add Product"}
-                </DialogTitle>
-                <DialogDescription>
-                  {selectedProduct
-                    ? "Update the product details."
-                    : "Fill in the details to add a new product."}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="sm:text-right">
-                    Name
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formState.name}
-                    onChange={handleInputChange}
-                    className="col-span-1 sm:col-span-3"
-                    placeholder="Product name"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="price" className="sm:text-right">
-                    Price (£)
-                  </Label>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    value={formState.price}
-                    onChange={handleInputChange}
-                    className="col-span-1 sm:col-span-3"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="category" className="sm:text-right">
-                    Category
-                  </Label>
-                  <select
-                    id="category"
-                    name="category"
-                    value={formState.category}
-                    onChange={handleInputChange}
-                    className="col-span-1 sm:col-span-3 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map((category) => (
-                      <option key={category._id} value={category.name}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="stock" className="sm:text-right">
-                    Stock
-                  </Label>
-                  <Input
-                    id="stock"
-                    name="stock"
-                    type="number"
-                    value={formState.stock}
-                    onChange={handleInputChange}
-                    className="col-span-1 sm:col-span-3"
-                    placeholder="0"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="school" className="sm:text-right">
-                    School
-                  </Label>
-                  <select
-                    id="school"
-                    name="schoolId"
-                    value={formState.schoolId}
-                    onChange={handleInputChange}
-                    className="col-span-1 sm:col-span-3 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="">Select a school</option>
-                    {schools.map((school) => (
-                      <option key={school._id} value={school._id}>
-                        {school.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
-                  <Label htmlFor="description" className="sm:text-right pt-2">
-                    Description
-                  </Label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formState.description}
-                    onChange={handleInputChange}
-                    className="col-span-1 sm:col-span-3 min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    placeholder="Product description"
-                  ></textarea>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="image" className="sm:text-right">
-                    Image
-                  </Label>
-                  <div className="col-span-1 sm:col-span-3">
-                    <Input
-                      id="image"
-                      type="file"
-                      onChange={handleImageUpload}
-                    />
-                    {selectedImage && (
-                      <img
-                        src={selectedImage}
-                        alt="Preview"
-                        className="mt-2 h-24 w-24 object-cover rounded-md"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-              <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                <Button
-                  onClick={
-                    selectedProduct ? handleUpdateProduct : handleAddProduct
-                  }
-                  className="w-full sm:w-auto"
-                >
-                  {selectedProduct ? "Update Product" : "Save Product"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button className="w-full sm:w-auto" onClick={openAddProductModal}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Product
+          </Button>
         </div>
 
         <div>
@@ -364,53 +274,68 @@ export default function ProductsPage() {
                       <TableHead>Category</TableHead>
                       <TableHead>Price</TableHead>
                       <TableHead>Stock</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>Featured</TableHead>
+                      <TableHead>In Stock</TableHead>
+                      <TableHead>On Sale</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredProducts.map((product) => (
                       <TableRow key={product._id}>
                         <TableCell>{product.name}</TableCell>
-                        <TableCell>{product.category}</TableCell>
-                        <TableCell>£{product.price.toFixed(2)}</TableCell>
+                        <TableCell>{product.category || "N/A"}</TableCell>
+                        <TableCell>₹{product.price.toFixed(2)}</TableCell>
                         <TableCell>{product.stock}</TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedProduct(product);
-                                  setFormState({
-                                    name: product.name,
-                                    price: product.price.toString(),
-                                    category: product.category || "",
-                                    stock: product.stock.toString(),
-                                    description:
-                                      "description" in product
-                                        ? (product.description as string)
-                                        : "", // Ensure description is optional
-                                    image: null,
-                                    schoolId: product.schoolId || "", // Add schoolId
-                                  });
-                                }}
-                              >
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteProduct(product._id)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        <TableCell>
+                          <div className="flex justify-center">
+                            <Checkbox 
+                              checked={product.isFeatured || false}
+                              onCheckedChange={async (checked) => {
+                                await updateProduct({
+                                  productId: product._id,
+                                  isFeatured: checked === true
+                                });
+                              }}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-center">
+                            <Checkbox 
+                              checked={product.inStock !== false} 
+                              onCheckedChange={async (checked) => {
+                                await updateProduct({
+                                  productId: product._id,
+                                  inStock: checked === true
+                                });
+                              }}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-center">
+                            <Checkbox 
+                              checked={product.isSale || false}
+                              onCheckedChange={async (checked) => {
+                                await updateProduct({
+                                  productId: product._id,
+                                  isSale: checked === true
+                                });
+                              }}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="outline" size="sm" onClick={() => openEditProductModal(product)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-red-600" 
+                              onClick={() => handleDeleteProduct(product._id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -421,6 +346,260 @@ export default function ProductsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Product Management Modal */}
+      <Modal isOpen={isModalOpen} onOpenChange={(open) => setIsModalOpen(open)} size="3xl">
+        <ModalContent>
+          <>
+            <ModalHeader>
+              <h3 className="text-xl font-semibold">
+                {isNewProduct ? "Add New Product" : "Edit Product"}
+              </h3>
+            </ModalHeader>
+            <ModalBody>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left column - Basic info */}
+                <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">Product Name</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        value={formState.name}
+                        onChange={handleInputChange}
+                        placeholder="Product name"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="price">Price (₹)</Label>
+                        <Input
+                          id="price"
+                          name="price"
+                          type="number"
+                          value={formState.price}
+                          onChange={handleInputChange}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="originalPrice">Original Price (₹)</Label>
+                        <Input
+                          id="originalPrice"
+                          name="originalPrice"
+                          type="number"
+                          value={formState.originalPrice}
+                          onChange={handleInputChange}
+                          placeholder="0.00 (for discounts)"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="category">Category</Label>
+                        <select
+                          id="category"
+                          name="category"
+                          value={formState.category}
+                          onChange={handleInputChange}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        >
+                          <option value="">Select category</option>
+                          {categories?.map((category) => (
+                            <option key={category._id} value={category.name}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="stock">Stock</Label>
+                        <Input
+                          id="stock"
+                          name="stock"
+                          type="number"
+                          value={formState.stock}
+                          onChange={handleInputChange}
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="school">School</Label>
+                      <select
+                        id="school"
+                        name="schoolId"
+                        value={formState.schoolId}
+                        onChange={handleInputChange}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">Select a school</option>
+                        {schools?.map((school) => (
+                          <option key={school._id} value={school._id}>
+                            {school.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="classLevel">Class Level</Label>
+                      <Input
+                        id="classLevel"
+                        name="classLevel"
+                        value={formState.classLevel}
+                        onChange={handleInputChange}
+                        placeholder="e.g., Primary, Secondary"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="gender">Gender</Label>
+                      <div className="flex gap-4 mt-2">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="gender"
+                            value="boy"
+                            checked={formState.gender === "boy"}
+                            onChange={handleInputChange}
+                          />
+                          Boy
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="gender"
+                            value="girl"
+                            checked={formState.gender === "girl"}
+                            onChange={handleInputChange}
+                          />
+                          Girl
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="gender"
+                            value="unisex"
+                            checked={formState.gender === "unisex"}
+                            onChange={handleInputChange}
+                          />
+                          Unisex
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        value={formState.description}
+                        onChange={handleInputChange}
+                        className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        placeholder="Product description"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  {/* Right column - Product attributes */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Product Image</Label>
+                      <div className="mt-2">
+                        <Input id="image" type="file" onChange={handleImageUpload} />
+                        {selectedImage && (
+                          <div className="mt-2 relative">
+                            <img
+                              src={selectedImage}
+                              alt="Product preview"
+                              className="h-40 w-auto object-contain border rounded-md"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Product Status</Label>
+                      <div className="grid grid-cols-2 gap-3 mt-2">
+                        <label className="flex items-center gap-2">
+                          <Checkbox
+                            name="inStock"
+                            checked={formState.inStock}
+                            onCheckedChange={(checked) => setFormState(prev => ({ ...prev, inStock: checked === true }))}
+                          />
+                          In Stock
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <Checkbox
+                            name="isNew"
+                            checked={formState.isNew}
+                            onCheckedChange={(checked) => setFormState(prev => ({ ...prev, isNew: checked === true }))}
+                          />
+                          New Arrival
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <Checkbox
+                            name="isFeatured"
+                            checked={formState.isFeatured}
+                            onCheckedChange={(checked) => setFormState(prev => ({ ...prev, isFeatured: checked === true }))}
+                          />
+                          Featured
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <Checkbox
+                            name="isSale"
+                            checked={formState.isSale}
+                            onCheckedChange={(checked) => setFormState(prev => ({ ...prev, isSale: checked === true }))}
+                          />
+                          On Sale
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <Checkbox
+                            name="allowCustomSize"
+                            checked={formState.allowCustomSize}
+                            onCheckedChange={(checked) => setFormState(prev => ({ ...prev, allowCustomSize: checked === true }))}
+                          />
+                          Allow Custom Size
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Available Sizes</Label>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2">
+                        {availableSizes.map((size) => (
+                          <label key={size} className="flex items-center gap-2">
+                            <Checkbox
+                              checked={formState.sizes.includes(size)}
+                              onCheckedChange={() => handleSizeToggle(size)}
+                            />
+                            {size}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                  </ModalBody>
+                </>
+              <ModalFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveProduct}>
+                  {isNewProduct ? "Add Product" : "Save Changes"}
+                </Button>
+              </ModalFooter>
+        </ModalContent>
+      </Modal>
     </AdminLayout>
   );
 }

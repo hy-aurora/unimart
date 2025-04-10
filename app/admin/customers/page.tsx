@@ -282,7 +282,7 @@ export default function CustomersPage() {
                                                             <TableCell>{customer.email}</TableCell>
                                                             <TableCell>{customer.school}</TableCell>
                                                             <TableCell>{customer.orders}</TableCell>
-                                                            <TableCell>£{customer.totalSpent.toFixed(2)}</TableCell>
+                                                            <TableCell>₹{customer.totalSpent.toFixed(2)}</TableCell>
                                                             <TableCell>
                                                                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(customer.status)}`}>
                                                                     {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
