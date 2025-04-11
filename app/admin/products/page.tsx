@@ -78,6 +78,11 @@ export default function ProductsPage() {
     gender: "unisex" as "boy" | "girl" | "unisex",
     classLevel: "",
     allowCustomSize: false,
+    detailsAndCare: {
+      materials: "",
+      careInstructions: [] as string[],
+      additionalInfo: ""
+    }
   });
 
   const handleInputChange = (e: { target: { name: string; value: any; type?: string; checked?: boolean } }) => {
@@ -139,6 +144,11 @@ export default function ProductsPage() {
       gender: "unisex",
       classLevel: "",
       allowCustomSize: false,
+      detailsAndCare: {
+        materials: "",
+        careInstructions: [],
+        additionalInfo: ""
+      }
     });
     setSelectedImage(null);
     setIsModalOpen(true);
@@ -163,6 +173,11 @@ export default function ProductsPage() {
       gender: product.gender,
       classLevel: product.classLevel || "",
       allowCustomSize: product.allowCustomSize,
+      detailsAndCare: {
+        materials: product.detailsAndCare?.materials || "",
+        careInstructions: product.detailsAndCare?.careInstructions || [],
+        additionalInfo: product.detailsAndCare?.additionalInfo || ""
+      }
     });
     setSelectedImage(product.imageUrls[0] || null);
     setIsModalOpen(true);
@@ -188,6 +203,13 @@ export default function ProductsPage() {
         isSale: formState.isSale,
         category: formState.category || undefined,
         description: formState.description || "",
+        detailsAndCare: {
+          materials: formState.detailsAndCare.materials || undefined,
+          careInstructions: formState.detailsAndCare.careInstructions.length > 0 
+            ? formState.detailsAndCare.careInstructions 
+            : undefined,
+          additionalInfo: formState.detailsAndCare.additionalInfo || undefined
+        },
         sizes: formState.sizes.length > 0 ? formState.sizes : undefined,
         gender: formState.gender,
         classLevel: formState.classLevel || "",
@@ -360,17 +382,17 @@ export default function ProductsPage() {
 
       {/* Product Management Modal */}
       <Modal isOpen={isModalOpen} onOpenChange={(open) => setIsModalOpen(open)} size="3xl">
-        <ModalContent>
+        <ModalContent className="max-h-[90vh] flex flex-col">
           <>
-            <ModalHeader>
+            <ModalHeader className="sticky top-0 z-10 bg-background border-b">
               <h3 className="text-xl font-semibold">
                 {isNewProduct ? "Add New Product" : "Edit Product"}
               </h3>
             </ModalHeader>
-            <ModalBody>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ModalBody className="overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pb-4">
                 {/* Left column - Basic info */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <div>
                       <Label htmlFor="name">Product Name</Label>
                       <Input
@@ -510,14 +532,69 @@ export default function ProductsPage() {
                         name="description"
                         value={formState.description}
                         onChange={handleInputChange}
-                        className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        className="w-full min-h-[80px] max-h-[150px] rounded-md border border-input bg-background px-3 py-2 text-sm"
                         placeholder="Product description"
                       ></textarea>
+                    </div>
+                    
+                    <div>
+                      <Label>Details & Care</Label>
+                      <div className="space-y-2 mt-2">
+                        <div>
+                          <Label htmlFor="materials" className="text-sm">Materials</Label>
+                          <Input
+                            id="materials"
+                            value={formState.detailsAndCare.materials}
+                            onChange={(e) => setFormState(prev => ({
+                              ...prev,
+                              detailsAndCare: {
+                                ...prev.detailsAndCare,
+                                materials: e.target.value
+                              }
+                            }))}
+                            placeholder="e.g., 65% Polyester, 35% Viscose"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="careInstructions" className="text-sm">Care Instructions</Label>
+                          <textarea
+                            id="careInstructions"
+                            value={formState.detailsAndCare.careInstructions.join('\n')}
+                            onChange={(e) => setFormState(prev => ({
+                              ...prev,
+                              detailsAndCare: {
+                                ...prev.detailsAndCare,
+                                careInstructions: e.target.value.split('\n').filter(line => line.trim() !== '')
+                              }
+                            }))}
+                            className="w-full min-h-[60px] max-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            placeholder="Enter one instruction per line, e.g.&#10;Machine washable at 40°C&#10;Do not bleach"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="additionalInfo" className="text-sm">Additional Information</Label>
+                          <textarea
+                            id="additionalInfo"
+                            value={formState.detailsAndCare.additionalInfo}
+                            onChange={(e) => setFormState(prev => ({
+                              ...prev,
+                              detailsAndCare: {
+                                ...prev.detailsAndCare,
+                                additionalInfo: e.target.value
+                              }
+                            }))}
+                            className="w-full min-h-[60px] max-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            placeholder="Any additional product information"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   {/* Right column - Product attributes */}
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div>
                       <Label>Product Image</Label>
                       <div className="mt-2">
@@ -598,7 +675,7 @@ export default function ProductsPage() {
                 </div>
                   </ModalBody>
                 </>
-              <ModalFooter>
+              <ModalFooter className="sticky bottom-0 z-10 bg-background border-t mt-auto">
                 <Button
                   variant="outline"
                   onClick={() => setIsModalOpen(false)}

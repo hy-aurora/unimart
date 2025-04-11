@@ -6,7 +6,7 @@ import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Id } from '@/convex/_generated/dataModel';
 
 // Custom function to validate and convert the ID
@@ -17,6 +17,7 @@ function isValidProductId(id: string): boolean {
 
 export default function ProductPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const id = params?.id && isValidProductId(params.id) ? params.id : null;
 
   const product = useQuery(
@@ -42,8 +43,9 @@ export default function ProductPage() {
         variant="light"
         className="mb-6"
         startContent={<Icon icon="lucide:arrow-left" />}
+        onClick={() => router.back()}
       >
-        Back to {product.schoolId}
+        Back
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
@@ -161,19 +163,42 @@ export default function ProductPage() {
               <Card>
                 <CardBody>
                   <div className="space-y-4">
-                    <div>
-                      <h3 className="font-medium mb-2">Materials</h3>
-                      <p className="text-gray-600">65% Polyester, 35% Viscose</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium mb-2">Care Instructions</h3>
-                      <ul className="list-disc list-inside text-gray-600">
-                        <li>Machine washable at 40°C</li>
-                        <li>Do not bleach</li>
-                        <li>Iron on medium heat</li>
-                        <li>Do not tumble dry</li>
-                      </ul>
-                    </div>
+                    {product.detailsAndCare?.materials && (
+                      <div>
+                        <h3 className="font-medium mb-2">Materials</h3>
+                        <p className="text-gray-600">{product.detailsAndCare.materials}</p>
+                      </div>
+                    )}
+                    {product.detailsAndCare?.careInstructions && product.detailsAndCare.careInstructions.length > 0 && (
+                      <div>
+                        <h3 className="font-medium mb-2">Care Instructions</h3>
+                        <ul className="list-disc list-inside text-gray-600">
+                          {product.detailsAndCare.careInstructions.map((instruction, i) => (
+                            <li key={i}>{instruction}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {product.detailsAndCare?.additionalInfo && (
+                      <div>
+                        <h3 className="font-medium mb-2">Additional Information</h3>
+                        <p className="text-gray-600">{product.detailsAndCare.additionalInfo}</p>
+                      </div>
+                    )}
+                    {/* Fallback if no detailsAndCare data is available */}
+                    {!product.detailsAndCare && (
+                      <>
+                        <div>
+                          <h3 className="font-medium mb-2">Care Instructions</h3>
+                          <ul className="list-disc list-inside text-gray-600">
+                            <li>Machine washable at 40°C</li>
+                            <li>Do not bleach</li>
+                            <li>Iron on medium heat</li>
+                            <li>Do not tumble dry</li>
+                          </ul>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardBody>
               </Card>

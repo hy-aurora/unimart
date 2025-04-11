@@ -49,6 +49,13 @@ export default defineSchema({
     category: v.optional(v.string()),
     schoolId: v.id("schools"),
     description: v.string(),
+    detailsAndCare: v.optional(
+      v.object({
+        materials: v.optional(v.string()),
+        careInstructions: v.optional(v.array(v.string())),
+        additionalInfo: v.optional(v.string()),
+      })
+    ),
     sizes: v.array(v.string()),
     gender: v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex")),
     classLevel: v.string(),

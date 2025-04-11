@@ -10,7 +10,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Icon icon="lucide:book-open" className="w-6 h-6 text-primary-500" />
-              <h3 className="text-xl font-bold text-primary-500">UniMart</h3>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-dark-gray-100">UniMart</h3>
             </div>
             <p className="text-gray-600 max-w-xs dark:text-dark-gray-400">
               Your trusted partner for high-quality school uniforms, delivering comfort and style to students nationwide.

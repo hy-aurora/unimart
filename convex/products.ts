@@ -17,6 +17,11 @@ export const add = mutation({
     isSale: v.optional(v.boolean()),
     category: v.optional(v.string()),
     description: v.string(), // Ensure this field is validated
+    detailsAndCare: v.optional(v.object({
+      materials: v.optional(v.string()),
+      careInstructions: v.optional(v.array(v.string())),
+      additionalInfo: v.optional(v.string())
+    })),
     sizes: v.array(v.string()),
     gender: v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex")),
     classLevel: v.string(),
@@ -54,6 +59,11 @@ export const modify = mutation({
     category: v.optional(v.string()),
     school: v.optional(v.string()),
     description: v.optional(v.string()),
+    detailsAndCare: v.optional(v.object({
+      materials: v.optional(v.string()),
+      careInstructions: v.optional(v.array(v.string())),
+      additionalInfo: v.optional(v.string())
+    })),
     sizes: v.optional(v.array(v.string())),
     gender: v.optional(
       v.union(v.literal("boy"), v.literal("girl"), v.literal("unisex"))
