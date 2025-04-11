@@ -30,65 +30,82 @@ export default function CartPage() {
       image?: string;
     }[]
   >([]);
-  const getCart = useQuery(api.carts.getCart, {}) as {
-    items: {
-      size?: string;
-      customSize?: {
-        chest?: number;
-        waist?: number;
-        height?: number;
-        notes?: string;
-      };
-      productId: string;
-      quantity: number;
-      price?: number;
-      name?: string;
-      image?: string;
-    }[];
-  } | null;
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const getCart = useQuery(api.carts.getCart, {});
   const addItem = useMutation(api.carts.addItem);
   const updateItem = useMutation(api.carts.updateItem);
   const removeItem = useMutation(api.carts.removeItem);
   const clearCart = useMutation(api.carts.clearCart);
 
   useEffect(() => {
-    if (getCart) {
-      setCartItems(
-        getCart.items.map((item) => ({
-          ...item,
-          price: item.price || 0,
-          name: item.name || "Unknown Product",
-          image: item.image || "/images/placeholder.webp",
-        }))
-      );
+    setIsLoading(true);
+    try {
+      if (getCart) {
+        // Make sure items is an array
+        const items = getCart.items || [];
+        
+        setCartItems(
+          items.map((item) => ({
+            ...item,
+            price: item.price || 0,
+            name: item.name || "Unknown Product",
+            image: item.image || "/images/placeholder.webp",
+          }))
+        );
+        setError(null);
+      }
+    } catch (err) {
+      console.error("Error loading cart:", err);
+      setError("Failed to load your cart. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }, [getCart]);
 
   const updateQuantity = async (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    const item = cartItems.find((item) => item.productId === id);
-    if (item) {
-      await updateItem({ productId: id as Id<"products">, quantity: newQuantity });
-      setCartItems(
-        cartItems.map((item) =>
-          item.productId === id ? { ...item, quantity: newQuantity } : item
-        )
-      );
+    
+    try {
+      const item = cartItems.find((item) => item.productId === id);
+      if (item) {
+        await updateItem({ productId: id as Id<"products">, quantity: newQuantity });
+        setCartItems(
+          cartItems.map((item) =>
+            item.productId === id ? { ...item, quantity: newQuantity } : item
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Error updating quantity:", err);
+      alert("Failed to update quantity. Please try again.");
     }
   };
 
   const removeItemFromCart = async (id: string) => {
-    await removeItem({ productId: id as Id<"products"> });
-    setCartItems(cartItems.filter((item) => item.productId !== id));
+    try {
+      await removeItem({ productId: id as Id<"products"> });
+      setCartItems(cartItems.filter((item) => item.productId !== id));
+    } catch (err) {
+      console.error("Error removing item:", err);
+      alert("Failed to remove item. Please try again.");
+    }
   };
 
   const clearCartItems = async () => {
-    await clearCart();
-    setCartItems([]);
+    try {
+      await clearCart();
+      setCartItems([]);
+    } catch (err) {
+      console.error("Error clearing cart:", err);
+      alert("Failed to clear cart. Please try again.");
+    }
   };
 
+  // Calculate totals
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
     0
   );
   const shipping = 4.99;
@@ -100,7 +117,28 @@ export default function CartPage() {
         Your Cart
       </h1>
 
-      {cartItems.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="flex justify-center mb-4">
+            <ShoppingBag className="h-16 w-16 text-gray-300" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 text-indigo-900 dark:text-indigo-400">
+            Loading your cart...
+          </h2>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <div className="flex justify-center mb-4">
+            <ShoppingBag className="h-16 w-16 text-gray-300" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 text-red-500">
+            {error}
+          </h2>
+          <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
+            <Link href="/schools">Continue Shopping</Link>
+          </Button>
+        </div>
+      ) : cartItems.length === 0 ? (
         <div className="text-center py-12">
           <div className="flex justify-center mb-4">
             <ShoppingBag className="h-16 w-16 text-gray-300" />
@@ -145,7 +183,7 @@ export default function CartPage() {
                           <h3 className="font-medium text-indigo-900 dark:text-indigo-300">
                             {item.name}
                           </h3>
-                          <CartItemDetails item={item} />
+                          <CartItemDetails item={{...item, productId: item.productId as Id<"products">}} />
                           <button
                             onClick={() => removeItemFromCart(item.productId)}
                             className="text-sm text-red-500 flex items-center mt-1"

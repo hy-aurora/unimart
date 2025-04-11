@@ -313,7 +313,7 @@ export const updateProfile = mutation({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new ConvexError("Unauthorized");
+      throw new ConvexError("Unauthorized: You must be logged in");
     }
 
     const user = await ctx.db
@@ -327,6 +327,16 @@ export const updateProfile = mutation({
 
     // Update user with provided fields
     await ctx.db.patch(user._id, { ...args });
+
+    // Add a notification for the user
+    await ctx.db.insert("user_notifications", {
+      userId: user._id,
+      message: "Your profile has been updated successfully",
+      type: "success",
+      isRead: false,
+      createdAt: Date.now(),
+      link: "/profile",
+    });
 
     return { success: true, ...args };
   }
@@ -362,25 +372,40 @@ export const getUserOrders = query({
       ordersQuery = ordersQuery.filter(q => q.eq(q.field("status"), args.status));
     }
 
-    const orders = await ordersQuery.collect();
+    // Sort by creation date (newest first)
+    const orders = await ordersQuery
+      .order("desc")
+      .collect();
     
     // Enhance order details with product info
     const enhancedOrders = await Promise.all(
       orders.map(async (order) => {
-        const items = await Promise.all(
-          order.items.map(async (item) => {
-            const product = await ctx.db.get(item.productId);
-            return {
-              ...item,
-              name: product?.name || "Unknown Product",
-              image: product?.imageUrls?.[0] || "/placeholder.svg",
-            };
+        // Make sure items exists and is an array
+        const items = Array.isArray(order.items) ? order.items : [];
+        
+        const enhancedItems = await Promise.all(
+          items.map(async (item) => {
+            try {
+              const product = await ctx.db.get(item.productId);
+              return {
+                ...item,
+                name: product?.name || item.name || "Unknown Product",
+                image: product?.imageUrls?.[0] || "/placeholder.svg",
+              };
+            } catch (error) {
+              console.error("Error fetching product:", error);
+              return {
+                ...item,
+                name: item.name || "Unknown Product",
+                image: "/placeholder.svg",
+              };
+            }
           })
         );
         
         return {
           ...order,
-          items,
+          items: enhancedItems,
         };
       })
     );

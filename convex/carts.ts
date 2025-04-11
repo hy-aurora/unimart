@@ -1,5 +1,6 @@
-import { v, ConvexError } from "convex/values";
+import { v, ConvexError, GenericId } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { TableNamesInDataModel } from "convex/server";
 
 // In-memory cache for non-logged-in users
 const guestCartCache = new Map();
@@ -96,6 +97,23 @@ export const updateItem = mutation({
       throw new ConvexError("User not found");
     }
 
+    // Check if the product exists and has enough stock
+    const product = await ctx.db.get(args.productId);
+    if (!product) {
+      throw new ConvexError("Product not found");
+    }
+    
+    // Verify product stock if quantity is being updated
+    if (args.quantity !== undefined) {
+      if (args.quantity <= 0) {
+        throw new ConvexError("Quantity must be greater than zero");
+      }
+      
+      if (args.quantity > product.stock) {
+        throw new ConvexError(`Sorry, only ${product.stock} items are available in stock`);
+      }
+    }
+
     const cart = await ctx.db
       .query("carts")
       .withIndex("by_userId", (q) => q.eq("userId", user._id))
@@ -112,6 +130,13 @@ export const updateItem = mutation({
     await ctx.db.patch(cart._id, {
       items: updatedItems,
       updatedAt: Date.now(),
+    });
+
+    // Log activity for analytics
+    await ctx.db.insert("insights", {
+      metric: "cart_update",
+      value: 1,
+      timestamp: Date.now(),
     });
 
     return { success: true };
@@ -250,7 +275,47 @@ export const getCart = query({
     if (args.guestId) {
       // Handle guest user
       const guestCart = guestCartCache.get(args.guestId) || [];
-      return { items: guestCart };
+      
+      // Enhance guest cart items with product details
+      const detailedItems = await Promise.all(
+        guestCart.map(async (item: { productId: GenericId<TableNamesInDataModel<{ users: { document: { _id: GenericId<"users">; _creationTime: number; username: string; email: string; imageUrl: string; clerkId: string; password: string; name: string; role: "admin" | "user"; phone: string; isActive: boolean; address: string; }; fieldPaths: ("username" | "email" | "imageUrl" | "clerkId" | "password" | "name" | "role" | "phone" | "isActive" | "address" | "_creationTime") | "_id"; indexes: { by_username: ["username", "_creationTime"]; by_clerkId: ["clerkId", "_creationTime"]; by_email: ["email", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; schools: { document: { _id: GenericId<"schools">; _creationTime: number; name: string; slug: string; logoUrl: string; bannerUrl: string; description: string; location: string; createdAt: number; }; fieldPaths: ("name" | "_creationTime" | "slug" | "logoUrl" | "bannerUrl" | "description" | "location" | "createdAt") | "_id"; indexes: { by_slug: ["slug", "_creationTime"]; by_name: ["name", "_creationTime"]; by_createdAt: ["createdAt", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; products: { document: { _id: GenericId<"products">; _creationTime: number; originalPrice?: number | undefined; rating?: number | undefined; ratingCount?: number | undefined; inStock?: boolean | undefined; isNew?: boolean | undefined; isFeatured?: boolean | undefined; isSale?: boolean | undefined; category?: string | undefined; detailsAndCare?: { materials?: string | undefined; careInstructions?: string[] | undefined; additionalInfo?: string | undefined; } | undefined; id: string; name: string; description: string; createdAt: number; price: number; imageUrls: string[]; schoolId: GenericId<"schools">; sizes: string[]; gender: "boy" | "girl" | "unisex"; classLevel: string; stock: number; allowCustomSize: boolean; }; fieldPaths: ("id" | "name" | "_creationTime" | "description" | "createdAt" | "price" | "originalPrice" | "imageUrls" | "rating" | "ratingCount" | "inStock" | "isNew" | "isFeatured" | "isSale" | "category" | "schoolId" | "detailsAndCare" | "sizes" | "gender" | "classLevel" | "stock" | "allowCustomSize" | "detailsAndCare.materials" | "detailsAndCare.careInstructions" | "detailsAndCare.additionalInfo") | "_id"; indexes: { by_schoolId: ["schoolId", "_creationTime"]; by_price: ["price", "_creationTime"]; by_createdAt: ["createdAt", "_creationTime"]; by_string_id: ["id", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; carts: { document: { _id: GenericId<"carts">; _creationTime: number; userId: GenericId<"users">; items: { size?: string | undefined; customSize?: { chest?: number | undefined; waist?: number | undefined; height?: number | undefined; notes?: string | undefined; } | undefined; productId: GenericId<"products">; quantity: number; }[]; updatedAt: number; }; fieldPaths: ("_creationTime" | "userId" | "items" | "updatedAt") | "_id"; indexes: { by_userId: ["userId", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; payments: { document: { _id: GenericId<"payments">; _creationTime: number; status: "success" | "failed"; orderId: GenericId<"orders">; razorpayPaymentId: string; razorpayOrderId: string; amount: number; paidAt: number; }; fieldPaths: ("_creationTime" | "status" | "orderId" | "razorpayPaymentId" | "razorpayOrderId" | "amount" | "paidAt") | "_id"; indexes: { by_orderId: ["orderId", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; orders: { document: { _id: GenericId<"orders">; _creationTime: number; paymentId?: GenericId<"payments"> | undefined; createdAt: number; userId: GenericId<"users">; items: { size?: string | undefined; customSize?: { chest?: number | undefined; waist?: number | undefined; height?: number | undefined; notes?: string | undefined; } | undefined; name: string; price: number; productId: GenericId<"products">; quantity: number; }[]; totalAmount: number; status: "pending" | "paid" | "shipped" | "delivered" | "cancelled"; shippingAddress: string; }; fieldPaths: ("_creationTime" | "createdAt" | "userId" | "items" | "totalAmount" | "status" | "shippingAddress" | "paymentId") | "_id"; indexes: { by_userId: ["userId", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; reviews: { document: { _id: GenericId<"reviews">; _creationTime: number; createdAt: number; rating: number; userId: GenericId<"users">; productId: GenericId<"products">; comment: string; }; fieldPaths: ("_creationTime" | "createdAt" | "rating" | "userId" | "productId" | "comment") | "_id"; indexes: { by_productId: ["productId", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; coupons: { document: { _id: GenericId<"coupons">; _creationTime: number; usageLimit?: number | undefined; isActive: boolean; code: string; discountPercentage: number; expiresAt: number; }; fieldPaths: ("isActive" | "_creationTime" | "code" | "discountPercentage" | "expiresAt" | "usageLimit") | "_id"; indexes: { by_code: ["code", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; inventory_logs: { document: { _id: GenericId<"inventory_logs">; _creationTime: number; createdAt: number; productId: GenericId<"products">; change: number; reason: string; }; fieldPaths: ("_creationTime" | "createdAt" | "productId" | "change" | "reason") | "_id"; indexes: { by_productId: ["productId", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; insights: { document: { _id: GenericId<"insights">; _creationTime: number; metric: string; value: number; timestamp: number; }; fieldPaths: ("_creationTime" | "metric" | "value" | "timestamp") | "_id"; indexes: { by_metric: ["metric", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; admin_todos: { document: { _id: GenericId<"admin_todos">; _creationTime: number; description?: string | undefined; title: string; isCompleted: boolean; createdBy: GenericId<"users">; }; fieldPaths: ("_creationTime" | "description" | "title" | "isCompleted" | "createdBy") | "_id"; indexes: { by_creator: ["createdBy", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; admin_notifications: { document: { _id: GenericId<"admin_notifications">; _creationTime: number; link?: string | undefined; type: "success" | "info" | "warning" | "error"; createdAt: number; message: string; isRead: boolean; }; fieldPaths: "_id" | ("type" | "_creationTime" | "createdAt" | "message" | "isRead" | "link"); indexes: { by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; user_notifications: { document: { _id: GenericId<"user_notifications">; _creationTime: number; link?: string | undefined; type: "success" | "info" | "warning" | "error"; createdAt: number; userId: GenericId<"users">; message: string; isRead: boolean; }; fieldPaths: ("type" | "_creationTime" | "createdAt" | "userId" | "message" | "isRead" | "link") | "_id"; indexes: { by_userId: ["userId", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; admin_queries: { document: { _id: GenericId<"admin_queries">; _creationTime: number; phone?: string | undefined; subject?: string | undefined; email: string; name: string; createdAt: number; message: string; }; fieldPaths: "_id" | ("email" | "name" | "phone" | "_creationTime" | "createdAt" | "message" | "subject"); indexes: { by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; categories: { document: { _id: GenericId<"categories">; _creationTime: number; description?: string | undefined; name: string; createdAt: number; }; fieldPaths: ("name" | "_creationTime" | "description" | "createdAt") | "_id"; indexes: { by_name: ["name", "_creationTime"]; by_id: ["_id"]; by_creation_time: ["_creationTime"]; }; searchIndexes: {}; vectorIndexes: {}; }; }>>; }) => {
+          try {
+            const product = await ctx.db.get(item.productId);
+            if (!product) {
+              return {
+                ...item,
+                name: "Product Not Available",
+                price: 0,
+                image: "/images/placeholder.webp",
+              };
+            }
+            
+            // Assert that product is from the products table
+            const productData = product as {
+              name: string;
+              price: number;
+              imageUrls?: string[];
+            };
+            
+            return {
+              ...item,
+              name: productData.name,
+              price: productData.price,
+              image: productData.imageUrls?.[0] || "/images/placeholder.webp",
+            };
+          } catch (error) {
+            console.error("Error getting product for guest cart:", error);
+            return {
+              ...item,
+              name: "Error Loading Product",
+              price: 0,
+              image: "/images/placeholder.webp",
+            };
+          }
+        })
+      );
+      
+      return { items: detailedItems };
     }
 
     const identity = await ctx.auth.getUserIdentity();
@@ -277,15 +342,36 @@ export const getCart = query({
       return { items: [] };
     }
 
+    // Make sure cart items is an array
+    const cartItems = Array.isArray(cart.items) ? cart.items : [];
+    
     const detailedItems = await Promise.all(
-      cart.items.map(async (item) => {
-        const product = await ctx.db.get(item.productId);
-        return {
-          ...item,
-          name: product?.name || "Unknown Product",
-          price: product?.price || 0,
-          image: product?.imageUrls?.[0] || "/images/placeholder.webp",
-        };
+      cartItems.map(async (item) => {
+        try {
+          const product = await ctx.db.get(item.productId);
+          if (!product) {
+            return {
+              ...item,
+              name: "Product No Longer Available",
+              price: 0,
+              image: "/images/placeholder.webp",
+            };
+          }
+          return {
+            ...item,
+            name: product.name,
+            price: product.price,
+            image: product.imageUrls?.[0] || "/images/placeholder.webp",
+          };
+        } catch (error) {
+          console.error("Error fetching product details:", error);
+          return {
+            ...item,
+            name: "Error Loading Product",
+            price: 0,
+            image: "/images/placeholder.webp",
+          };
+        }
       })
     );
 

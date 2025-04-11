@@ -95,7 +95,70 @@ export const remove = mutation({
       throw new ConvexError("Unauthorized");
     }
 
+    // Check if the user is an admin
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
+    // Get product details before deletion
+    const product = await ctx.db.get(args.productId);
+    if (!product) {
+      throw new ConvexError("Product not found");
+    }
+
+    // Check if product is in any user's cart
+    const carts = await ctx.db
+      .query("carts")
+      .collect();
+    
+    let productInCart = false;
+    for (const cart of carts) {
+      if (cart.items.some(item => item.productId === args.productId)) {
+        productInCart = true;
+        break;
+      }
+    }
+
+    if (productInCart) {
+      // Option 1: Throw error
+      // throw new ConvexError("Cannot delete product that is in users' carts");
+      
+      // Option 2: Remove from all carts
+      for (const cart of carts) {
+        const updatedItems = cart.items.filter(item => item.productId !== args.productId);
+        if (updatedItems.length !== cart.items.length) {
+          await ctx.db.patch(cart._id, {
+            items: updatedItems,
+            updatedAt: Date.now(),
+          });
+        }
+      }
+    }
+
+    // Log inventory change before deletion
+    await ctx.db.insert("inventory_logs", {
+      productId: args.productId,
+      change: -product.stock,
+      reason: "Product deleted",
+      createdAt: Date.now(),
+    });
+
+    // Delete the product
     await ctx.db.delete(args.productId);
+    
+    // Create notification for admins
+    await ctx.db.insert("admin_notifications", {
+      message: `Product "${product.name}" has been deleted`,
+      type: "info",
+      isRead: false,
+      createdAt: Date.now(),
+    });
+
     return { success: true };
   },
 });

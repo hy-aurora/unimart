@@ -65,7 +65,42 @@ export const remove = mutation({
       throw new ConvexError("Unauthorized");
     }
 
+    // Check if the user is an admin
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
+    // Check if there are products associated with this school
+    const associatedProducts = await ctx.db
+      .query("products")
+      .withIndex("by_schoolId", (q) => q.eq("schoolId", args.schoolId))
+      .collect();
+
+    if (associatedProducts.length > 0) {
+      throw new ConvexError(
+        `Cannot delete school with ${associatedProducts.length} associated products. Please remove or reassign these products first.`
+      );
+    }
+
+    // Get school details for notification
+    const school = await ctx.db.get(args.schoolId);
+    
+    // Delete the school
     await ctx.db.delete(args.schoolId);
+    
+    // Create notification for admins
+    await ctx.db.insert("admin_notifications", {
+      message: `School "${school?.name}" has been deleted`,
+      type: "info",
+      isRead: false,
+      createdAt: Date.now(),
+    });
+
     return { success: true };
   },
 });

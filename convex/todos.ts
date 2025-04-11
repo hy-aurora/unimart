@@ -76,7 +76,27 @@ export const remove = mutation({
       throw new ConvexError("Todo not found");
     }
 
+    // Check if the user is an admin
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    
+    if (!user || user.role !== "admin") {
+      throw new ConvexError("Unauthorized: Admin access required");
+    }
+
+    // Delete the todo
     await ctx.db.delete(args.todoId);
+    
+    // Log the activity
+    await ctx.db.insert("admin_notifications", {
+      message: `Todo "${todo.title}" has been deleted`,
+      type: "info", 
+      isRead: false,
+      createdAt: Date.now(),
+    });
+    
     return { success: true };
   },
 });
