@@ -15,6 +15,8 @@ import {
   TableRow,
   TableCell,
   useDisclosure,
+  Checkbox,
+  Chip,
 } from "@heroui/react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -31,6 +33,7 @@ interface School {
   description: string;
   location: string;
   createdAt: number;
+  featured?: boolean;
 }
 
 export default function SchoolList() {
@@ -58,7 +61,7 @@ export default function SchoolList() {
   const addSchool = useMutation(api.schools.add);
   const updateSchool = useMutation(api.schools.update);
   const deleteSchool = useMutation(api.schools.remove);
-  const notify = useMutation(api.notifications.add);
+  const createAdminNotification = useMutation(api.adminNotifications.create);
   const schools = useQuery(api.schools.getAll) as School[] | undefined;
 
   const [selectedLogo, setSelectedLogo] = React.useState<string | null>(null);
@@ -104,29 +107,27 @@ export default function SchoolList() {
         bannerUrl: selectedBanner || "/images/placeholder.webp",
         description: data.description as string || "",
         location: data.location as string || "",
+        featured: formData.has("featured"), // Get featured status from checkbox
         createdAt: Date.now(),
       };
 
       await addSchool(schoolData);
-      if (user) {
-        await notify({
-          userId: user.id as Id<"users">,
-          message: "School added successfully!",
-          type: "success",
-        });
-      }
+      // Remove isRead and createdAt properties
+      await createAdminNotification({
+        message: `School "${schoolData.name}" was added successfully${schoolData.featured ? " (Featured)" : ""}`,
+        type: "info",
+      });
+      
       setSelectedLogo(null);
       setSelectedBanner(null);
       onAddOpenChange(); // Close the modal
     } catch (err) {
       setError("Failed to add school. Please try again.");
-      if (user) {
-        await notify({
-          userId: user.id as Id<"users">,
-          message: "Failed to add school. Please try again.",
-          type: "error",
-        });
-      }
+      // Remove isRead and createdAt properties
+      await createAdminNotification({
+        message: `Failed to add school: ${err}`,
+        type: "error",
+      });
     }
   };
 
@@ -147,29 +148,27 @@ export default function SchoolList() {
           bannerUrl: selectedBanner || selectedSchool.bannerUrl,
           description: data.description as string || undefined,
           location: data.location as string || undefined,
+          featured: formData.has("featured"), // Get featured status from checkbox
         };
 
         await updateSchool(schoolData);
-        if (user) {
-          await notify({
-            userId: user.id as Id<"users">,
-            message: "School updated successfully!",
-            type: "success",
-          });
-        }
+        // Remove isRead and createdAt properties
+        await createAdminNotification({
+          message: `School "${schoolData.name}" was updated successfully`,
+          type: "info",
+        });
+        
         setSelectedLogo(null);
         setSelectedBanner(null);
         onEditOpenChange(); // Close the modal
       }
     } catch (err) {
       setError("Failed to update school. Please try again.");
-      if (user) {
-        await notify({
-          userId: user.id as Id<"users">,
-          message: "Failed to update school. Please try again.",
-          type: "error",
-        });
-      }
+      // Remove isRead and createdAt properties
+      await createAdminNotification({
+        message: `Failed to update school: ${err}`,
+        type: "error",
+      });
     }
   };
 
@@ -179,10 +178,20 @@ export default function SchoolList() {
     try {
       if (selectedSchool) {
         await deleteSchool({ schoolId: selectedSchool._id as Id<"schools"> });
+        // Remove isRead and createdAt properties
+        await createAdminNotification({
+          message: `School "${selectedSchool.name}" was deleted successfully`,
+          type: "info",
+        });
         onDeleteOpenChange(); // Close the modal after successful deletion
       }
     } catch (err) {
       setError("Failed to delete school. Please try again.");
+      // Remove isRead and createdAt properties
+      await createAdminNotification({
+        message: `Failed to delete school: ${err}`,
+        type: "error",
+      });
     }
   };
 
@@ -209,6 +218,7 @@ export default function SchoolList() {
           <TableColumn>NAME</TableColumn>
           <TableColumn>SLUG</TableColumn>
           <TableColumn>LOCATION</TableColumn>
+          <TableColumn>STATUS</TableColumn>
           <TableColumn>ACTIONS</TableColumn>
         </TableHeader>
         <TableBody emptyContent="No schools available">
@@ -218,6 +228,11 @@ export default function SchoolList() {
                 <TableCell>{school.name}</TableCell>
                 <TableCell>{school.slug}</TableCell>
                 <TableCell>{school.location}</TableCell>
+                <TableCell>
+                  {school.featured && (
+                    <Chip color="warning" variant="flat">Featured</Chip>
+                  )}
+                </TableCell>
                 <TableCell>
                   <Button
                     size="sm"
@@ -320,6 +335,15 @@ export default function SchoolList() {
                     placeholder="Enter school location"
                     variant="bordered"
                   />
+                  <div className="flex items-center gap-2 mt-2">
+                    <Checkbox
+                      name="featured"
+                      id="featured-add"
+                    />
+                    <label htmlFor="featured-add" className="text-sm font-medium text-gray-700">
+                      Featured School (will appear on homepage)
+                    </label>
+                  </div>
                   <div className="flex justify-end gap-2">
                     <Button color="danger" variant="light" onPress={onClose}>
                       Cancel
@@ -430,6 +454,16 @@ export default function SchoolList() {
                     placeholder="Enter school location"
                     variant="bordered"
                   />
+                  <div className="flex items-center gap-2 mt-2">
+                    <Checkbox
+                      name="featured"
+                      id="featured-edit"
+                      defaultSelected={selectedSchool?.featured}
+                    />
+                    <label htmlFor="featured-edit" className="text-sm font-medium text-gray-700">
+                      Featured School (will appear on homepage)
+                    </label>
+                  </div>
                   <div className="flex justify-end gap-2">
                     <Button color="danger" variant="light" onPress={onClose}>
                       Cancel

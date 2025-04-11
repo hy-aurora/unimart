@@ -12,6 +12,7 @@ export const add = mutation({
     description: v.string(),
     location: v.string(),
     createdAt: v.number(),
+    featured: v.optional(v.boolean()), // Add featured field to args
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -23,7 +24,7 @@ export const add = mutation({
 
     // Create an admin notification
     await ctx.runMutation(api.adminNotifications.create, {
-      message: `New school added: ${args.name}`,
+      message: `New school added: ${args.name}${args.featured ? " (Featured)" : ""}`,
       type: "info",
     });
 
@@ -41,6 +42,7 @@ export const update = mutation({
     bannerUrl: v.optional(v.string()),
     description: v.optional(v.string()),
     location: v.optional(v.string()),
+    featured: v.optional(v.boolean()), // Add featured field to args
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -49,6 +51,20 @@ export const update = mutation({
     }
 
     const { schoolId, ...updates } = args;
+    
+    // If featured status is changing, create a notification
+    if (updates.featured !== undefined) {
+      const school = await ctx.db.get(schoolId);
+      if (school && school.featured !== updates.featured) {
+        await ctx.db.insert("admin_notifications", {
+          message: `School "${school.name}" has been ${updates.featured ? "featured" : "unfeatured"}`,
+          type: "info",
+          isRead: false,
+          createdAt: Date.now(),
+        });
+      }
+    }
+    
     await ctx.db.patch(schoolId, updates);
     return { success: true };
   },
@@ -173,5 +189,72 @@ export const getIdByName = query({
       throw new ConvexError("School not found");
     }
     return school._id;
+  },
+});
+
+// Query to get featured schools for the home page
+export const getFeaturedSchools = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 5;
+    
+    // First try to get schools marked as featured
+    let schools = await ctx.db
+      .query("schools")
+      .filter(q => q.eq(q.field("featured"), true))
+      .take(limit);
+    
+    // If not enough featured schools, fill with other schools
+    if (schools.length < limit) {
+      const additionalSchools = await ctx.db
+        .query("schools")
+        .order("desc")
+        .filter(q => q.neq(q.field("featured"), true)) // Get non-featured schools
+        .take(limit - schools.length);
+      
+      schools = [...schools, ...additionalSchools];
+    }
+    
+    return schools;
+  },
+});
+
+// Query to search schools by name or location
+export const searchSchools = query({
+  args: {
+    query: v.string(),
+  },
+  handler: async (ctx, args) => {
+    let schools;
+    
+    if (args.query.trim() === '') {
+      // If no query provided, return all schools
+      schools = await ctx.db.query("schools").collect();
+    } else {
+      // Search by name or location (simple contains search)
+      // Note: In a real app, you might want to use a more sophisticated search mechanism
+      const allSchools = await ctx.db.query("schools").collect();
+      const lowerQuery = args.query.toLowerCase();
+      
+      schools = allSchools.filter(school => 
+        school.name.toLowerCase().includes(lowerQuery) ||
+        (school.location && school.location.toLowerCase().includes(lowerQuery))
+      );
+    }
+    
+    return schools;
+  },
+});
+
+// Get a single school by ID
+export const getSchool = query({
+  args: {
+    id: v.id("schools"),
+  },
+  handler: async (ctx, args) => {
+    const school = await ctx.db.get(args.id);
+    return school;
   },
 });

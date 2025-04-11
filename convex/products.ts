@@ -214,3 +214,48 @@ export const getGroupedBySchool = query({
     return grouped;
   },
 });
+
+// Query to get featured products for the home page
+export const getFeaturedProducts = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 4;
+    
+    // First try to get products marked as featured
+    let products = await ctx.db
+      .query("products")
+      .filter(q => q.eq(q.field("isFeatured"), true))
+      .take(limit);
+    
+    // If not enough featured products, fill with other products
+    if (products.length < limit) {
+      const additionalProducts = await ctx.db
+        .query("products")
+        .filter(q => q.eq(q.field("isFeatured"), false))
+        .order("desc")
+        .take(limit - products.length);
+      
+      products = [...products, ...additionalProducts];
+    }
+    
+    return products;
+  },
+});
+
+// Query to get a single product by ID
+export const getProduct = query({
+  args: {
+    id: v.id("products"),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.id);
+    
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    
+    return product;
+  },
+});

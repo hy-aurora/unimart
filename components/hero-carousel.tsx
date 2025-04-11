@@ -23,7 +23,7 @@ const carouselItems = [
     title: "Fast & Free Delivery",
     description: "Order online and have your uniforms delivered directly to your home or school.",
     image: "https://img.heroui.chat/image/fashion?w=1200&h=600&u=3",
-    cta: { text: "How It Works", link: "/delivery" }
+    cta: { text: "How It Works", link: "/" }
   }
 ];
 

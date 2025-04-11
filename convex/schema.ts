@@ -28,6 +28,7 @@ export default defineSchema({
     description: v.string(),
     location: v.string(),
     createdAt: v.number(),
+    featured: v.optional(v.boolean()), // New field for featured schools
   })
     .index("by_slug", ["slug"])
     .index("by_name", ["name"])
