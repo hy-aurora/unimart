@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/footer";
 // import { ThemeProvider } from "@/components/providers/theme-provider";
 import { NotificationProvider } from "@/components/providers/notification-provider";
 import Provider from "@/components/Provider";
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,6 +42,7 @@ export default function RootLayout({
               </div>
             </Provider>
           </NotificationProvider>
+        <Toaster richColors position="top-right" />
         {/* </ThemeProvider> */}
       </body>
     </html>

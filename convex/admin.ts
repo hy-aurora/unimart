@@ -5,19 +5,48 @@ import { mutation, query } from "./_generated/server";
 export const getDashboardStats = query({
   args: {},
   handler: async (ctx) => {
-    // Verify that the user is an admin
+    // Get the user identity 
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity || !identity.subject) {
-      throw new ConvexError("Unauthorized: Missing or invalid identity");
+    
+    // Initialize default empty response
+    const emptyStats = {
+      counts: {
+        products: 0,
+        schools: 0,
+        orders: 0,
+        users: 0,
+        featuredProducts: 0,
+        saleProducts: 0,
+        newProducts: 0,
+      },
+      revenue: 0,
+      recentOrders: [],
+      lowStockProducts: [],
+      ordersByStatus: {
+        pending: 0,
+        paid: 0,
+        shipped: 0,
+        delivered: 0,
+        cancelled: 0,
+      },
+      salesTrend: [],
+      popularProducts: [],
+    };
+
+    // If no identity, return empty stats instead of throwing an error
+    if (!identity) {
+      return emptyStats;
     }
 
+    // Check if the user is an admin
     const user = await ctx.db
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
 
+    // If not an admin, return empty stats
     if (!user || user.role !== "admin") {
-      throw new ConvexError("Unauthorized: Admin access required");
+      return emptyStats;
     }
 
     // Get count of products

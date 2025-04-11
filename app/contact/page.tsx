@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 import { Mail, MapPin, Phone } from "lucide-react"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +14,80 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export default function ContactPage() {
   const [enquiryType, setEnquiryType] = useState("general")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    orderNumber: "",
+    schoolName: "",
+    message: ""
+  })
+
+  // Get the mutation to add a contact query
+  const addContactQuery = useMutation(api.contactQueries.add)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target
+    setFormData(prev => ({ ...prev, [id]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      // Prepare subject based on enquiry type
+      let subject = `${enquiryType.charAt(0).toUpperCase() + enquiryType.slice(1)} Enquiry`
+      
+      if (enquiryType === "order" && formData.orderNumber) {
+        subject += ` - Order #${formData.orderNumber}`
+      } else if (enquiryType === "school" && formData.schoolName) {
+        subject += ` - ${formData.schoolName}`
+      }
+
+      // Append any additional info to the message
+      let fullMessage = formData.message
+      if (enquiryType === "order" && formData.orderNumber) {
+        fullMessage = `Order Number: ${formData.orderNumber}\n\n${fullMessage}`
+      } else if (enquiryType === "school" && formData.schoolName) {
+        fullMessage = `School Name: ${formData.schoolName}\n\n${fullMessage}`
+      }
+
+      // Submit the contact query
+      await addContactQuery({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        subject,
+        message: fullMessage
+      })
+
+      // Show success message
+      toast.success("Message sent successfully!", {
+        description: "We'll get back to you as soon as possible."
+      })
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        orderNumber: "",
+        schoolName: "",
+        message: ""
+      })
+      setEnquiryType("general")
+      
+    } catch (error) {
+      console.error("Error sending message:", error)
+      toast.error("Failed to send message", {
+        description: "Please try again later."
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="container px-4 py-8 md:py-12">
@@ -61,7 +138,7 @@ export default function ContactPage() {
 
         <div className="border rounded-lg p-6">
           <h2 className="text-2xl font-bold mb-6 text-indigo-900 dark:text-indigo-400">Send us a message</h2>
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <Label htmlFor="enquiry-type" className="text-indigo-900 dark:text-indigo-300">
                 Enquiry Type
@@ -95,31 +172,68 @@ export default function ContactPage() {
                 <Label htmlFor="name" className="text-indigo-900 dark:text-indigo-300">
                   Name
                 </Label>
-                <Input id="name" className="mt-1" required />
+                <Input 
+                  id="name" 
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="mt-1" 
+                  required 
+                />
               </div>
               <div>
                 <Label htmlFor="email" className="text-indigo-900 dark:text-indigo-300">
                   Email
                 </Label>
-                <Input id="email" type="email" className="mt-1" required />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="mt-1" 
+                  required 
+                />
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="phone" className="text-indigo-900 dark:text-indigo-300">
+                Phone (Optional)
+              </Label>
+              <Input 
+                id="phone" 
+                type="tel" 
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1" 
+              />
             </div>
 
             {enquiryType === "order" && (
               <div>
-                <Label htmlFor="order-number" className="text-indigo-900 dark:text-indigo-300">
+                <Label htmlFor="orderNumber" className="text-indigo-900 dark:text-indigo-300">
                   Order Number
                 </Label>
-                <Input id="order-number" className="mt-1" placeholder="e.g., ORD-123456" />
+                <Input 
+                  id="orderNumber" 
+                  value={formData.orderNumber}
+                  onChange={handleChange}
+                  className="mt-1" 
+                  placeholder="e.g., ORD-123456" 
+                />
               </div>
             )}
 
             {enquiryType === "school" && (
               <div>
-                <Label htmlFor="school-name" className="text-indigo-900 dark:text-indigo-300">
+                <Label htmlFor="schoolName" className="text-indigo-900 dark:text-indigo-300">
                   School Name
                 </Label>
-                <Input id="school-name" className="mt-1" />
+                <Input 
+                  id="schoolName" 
+                  value={formData.schoolName}
+                  onChange={handleChange}
+                  className="mt-1" 
+                />
               </div>
             )}
 
@@ -127,11 +241,22 @@ export default function ContactPage() {
               <Label htmlFor="message" className="text-indigo-900 dark:text-indigo-300">
                 Message
               </Label>
-              <Textarea id="message" className="mt-1" rows={5} required />
+              <Textarea 
+                id="message" 
+                value={formData.message}
+                onChange={handleChange}
+                className="mt-1" 
+                rows={5} 
+                required 
+              />
             </div>
 
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700">
-              Send Message
+            <Button 
+              type="submit" 
+              className="w-full bg-indigo-600 hover:bg-indigo-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Sending..." : "Send Message"}
             </Button>
           </form>
         </div>

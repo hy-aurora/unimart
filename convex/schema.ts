@@ -211,6 +211,9 @@ export default defineSchema({
     subject: v.optional(v.string()),
     phone: v.optional(v.string()),
     createdAt: v.number(),
+    responded: v.optional(v.boolean()),
+    responseText: v.optional(v.string()),
+    respondedAt: v.optional(v.number()),
   }),
 
   // Categories Table
@@ -219,4 +222,21 @@ export default defineSchema({
     description: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_name", ["name"]),
+  
+  // Sizing Appointments Table
+  sizing_appointments: defineTable({
+    name: v.string(),
+    email: v.string(),
+    phone: v.string(),
+    school: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("confirmed"),
+      v.literal("completed"),
+      v.literal("cancelled")
+    ),
+    notes: v.optional(v.string()),
+    adminResponse: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_email", ["email"]).index("by_status", ["status"]),
 });

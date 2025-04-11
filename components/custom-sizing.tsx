@@ -1,9 +1,83 @@
-import React from 'react';
-import { Button, Card, CardBody } from '@heroui/react';
+"use client";
+import React, { useState } from 'react';
+import { Button, Card, CardBody, Input, Select, SelectItem } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { Id } from '@/convex/_generated/dataModel';
+import { toast } from 'sonner';
 
 export default function SizeGuideSection() {
+  const bookAppointment = useMutation(api.contactQueries.bookSizingAppointment);
+  const schools = useQuery(api.schools.getAll);
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    school: ''
+  });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formSuccess, setFormSuccess] = useState(false);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.phone || !formData.school) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      await bookAppointment({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        school: formData.school as Id<"schools">
+      });
+      // Removing the duplicate call to bookAppointment that was causing the type error
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        school: ''
+      });
+      
+      setFormSuccess(true);
+      
+      toast.success("Appointment requested!", {
+        description: "We'll contact you soon to confirm the details.",
+        duration: 5000,
+      });
+    } catch (error) {
+      console.error("Error booking appointment:", error);
+      toast.error("Failed to book appointment", {
+        description: "Please try again later.",
+        duration: 3000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-background dark:bg-dark-background">
       <div className="relative py-20 bg-primary-900 text-white overflow-hidden">
@@ -32,6 +106,7 @@ export default function SizeGuideSection() {
               size="lg"
               className="bg-white text-primary-900"
               endContent={<Icon icon="lucide:arrow-right" />}
+              onPress={() => document.getElementById('booking-form')?.scrollIntoView({behavior: 'smooth'})}
             >
               Book Appointment
             </Button>
@@ -122,40 +197,95 @@ export default function SizeGuideSection() {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
+              id="booking-form"
             >
               <Card className="dark:bg-dark-card dark:border-dark-border">
                 <CardBody className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Book Your Session</h3>
-                  <div className="space-y-4">
-                    <input
-                      type="text"
-                      placeholder="Your Name"
-                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none"
-                    />
-                    <input
-                      type="email"
-                      placeholder="Email Address"
-                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none"
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone Number"
-                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none"
-                    />
-                    <select className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none">
-                      <option value="">Select Your School</option>
-                      <option value="school1">St. Mary's Academy</option>
-                      <option value="school2">Riverside High</option>
-                      <option value="school3">Kings College</option>
-                    </select>
-                    <Button
-                      color="primary"
-                      fullWidth
-                      size="lg"
-                    >
-                      Schedule Appointment
-                    </Button>
-                  </div>
+                  {formSuccess ? (
+                    <div className="text-center py-8">
+                      <div className="mb-4 inline-flex p-3 bg-green-100 rounded-full">
+                        <Icon icon="lucide:check" className="w-8 h-8 text-green-500" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">Appointment Requested!</h3>
+                      <p className="text-gray-600 dark:text-dark-gray-400 mb-6">
+                        Thank you for booking a sizing appointment. We'll contact you soon to confirm the details.
+                      </p>
+                      <Button
+                        color="primary"
+                        onPress={() => setFormSuccess(false)}
+                      >
+                        Book Another Appointment
+                      </Button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit}>
+                      <h3 className="text-xl font-semibold mb-4">Book Your Session</h3>
+                      <div className="space-y-4">
+                        <Input
+                          type="text"
+                          name="name"
+                          label="Your Name"
+                          placeholder="Enter your full name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          isRequired
+                        />
+                        <Input
+                          type="email"
+                          name="email"
+                          label="Email Address"
+                          placeholder="Enter your email address"
+                          value={formData.email}
+                          onChange={handleChange}
+                          isRequired
+                        />
+                        <Input
+                          type="tel"
+                          name="phone"
+                          label="Phone Number"
+                          placeholder="Enter your phone number"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          isRequired
+                        />
+                        <Select
+                          name="school"
+                          label="Select Your School"
+                          placeholder="Choose your school"
+                          value={formData.school}
+                          onChange={handleChange}
+                          isRequired
+                          isDisabled={schools === undefined}
+                        >
+                          {schools === undefined ? (
+                            <SelectItem key="loading">
+                              Loading schools...
+                            </SelectItem>
+                          ) : schools.length === 0 ? (
+                            <SelectItem key="none">
+                              No schools available
+                            </SelectItem>
+                          ) : (
+                            schools.map(school => (
+                              <SelectItem key={school._id} >
+                                {school.name}
+                              </SelectItem>
+                            ))
+                          )}
+                        </Select>
+                        <Button
+                          type="submit"
+                          color="primary"
+                          fullWidth
+                          size="lg"
+                          isLoading={isSubmitting}
+                          isDisabled={isSubmitting || schools === undefined}
+                        >
+                          Schedule Appointment
+                        </Button>
+                      </div>
+                    </form>
+                  )}
                 </CardBody>
               </Card>
             </motion.div>

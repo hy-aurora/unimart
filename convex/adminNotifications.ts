@@ -5,18 +5,23 @@ import { mutation, query } from "./_generated/server";
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
+    // Get the user identity
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity || !identity.subject) {
-      throw new ConvexError("Unauthorized: Missing or invalid identity");
+    
+    // If no identity, return an empty array instead of throwing an error
+    if (!identity) {
+      return [];
     }
 
+    // Check if the user is an admin
     const user = await ctx.db
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
 
+    // If not an admin, return an empty array
     if (!user || user.role !== "admin") {
-      throw new ConvexError("Unauthorized: Admin access required");
+      return [];
     }
 
     // Get notifications sorted by creation date (newest first)

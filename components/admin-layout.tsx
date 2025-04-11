@@ -18,6 +18,7 @@ import {
   Tag,
   Layers,
   Home,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,16 @@ const navItems = [
     title: "Schools",
     href: "/admin/schools",
     icon: School,
+  },
+  {
+    title: "Sizing Appointments",
+    href: "/admin/sizing-appointments",
+    icon: Layers,
+  },
+  {
+    title: "Queries",
+    href: "/admin/contacts",
+    icon: Mail,
   },
   {
     title: "Settings",
