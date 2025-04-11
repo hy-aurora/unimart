@@ -43,6 +43,7 @@ import {
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { GenericId } from "convex/values";
 import imageCompression from "browser-image-compression";
+import { useUser } from "@clerk/nextjs";
 
 export default function ProductsPage() {
   const products = useQuery(api.products.getAll) || [];
@@ -51,6 +52,8 @@ export default function ProductsPage() {
   const addProduct = useMutation(api.products.add);
   const updateProduct = useMutation(api.products.modify);
   const deleteProduct = useMutation(api.products.remove);
+  const notify = useMutation(api.notifications.add);
+  const { user } = useUser();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<null | (typeof products)[0]>(null);
@@ -166,59 +169,55 @@ export default function ProductsPage() {
   };
 
   const handleSaveProduct = async () => {
-    // Prepare imageUrls array
-    let imageUrls: string[] = [];
-    if (selectedImage) {
-      imageUrls = [selectedImage];
-    }
+    try {
+      // Prepare imageUrls array
+      let imageUrls: string[] = [];
+      if (selectedImage) {
+        imageUrls = [selectedImage];
+      }
 
-    if (isNewProduct) {
-      // Add new product
-      await addProduct({
-        id: Math.random().toString(36).substring(2, 9), // Generate a random ID
+      const productData = {
+        id: crypto.randomUUID(), // Generate a unique ID for the product
         name: formState.name,
         price: parseFloat(formState.price),
         originalPrice: formState.originalPrice ? parseFloat(formState.originalPrice) : undefined,
-        imageUrls,
-        rating: 0,
-        ratingCount: 0,
+        imageUrls: imageUrls.length > 0 ? imageUrls : [],
         inStock: formState.inStock,
         isNew: formState.isNew,
         isFeatured: formState.isFeatured,
         isSale: formState.isSale,
-        category: formState.category,
-        description: formState.description,
-        sizes: formState.sizes,
+        category: formState.category || undefined,
+        description: formState.description || "",
+        sizes: formState.sizes.length > 0 ? formState.sizes : undefined,
         gender: formState.gender,
-        classLevel: formState.classLevel,
-        schoolId: formState.schoolId as GenericId<"schools">,
+        classLevel: formState.classLevel || "",
         stock: parseInt(formState.stock, 10),
         allowCustomSize: formState.allowCustomSize,
-        createdAt: Date.now(),
-      });
-    } else if (selectedProduct) {
-      // Update existing product
-      await updateProduct({
-        productId: selectedProduct._id as GenericId<"products">,
-        name: formState.name,
-        price: parseFloat(formState.price),
-        originalPrice: formState.originalPrice ? parseFloat(formState.originalPrice) : undefined,
-        imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
-        inStock: formState.inStock,
-        isNew: formState.isNew,
-        isFeatured: formState.isFeatured,
-        isSale: formState.isSale,
-        category: formState.category,
-        description: formState.description,
-        sizes: formState.sizes,
-        gender: formState.gender,
-        classLevel: formState.classLevel,
-        stock: parseInt(formState.stock, 10),
-        allowCustomSize: formState.allowCustomSize,
-      });
-    }
+        schoolId: formState.schoolId as GenericId<"schools"> || "",
+        ...(isNewProduct ? { createdAt: Date.now() } : {}),
+      };
 
-    setIsModalOpen(false);
+      if (isNewProduct) {
+        await addProduct({ 
+          ...productData, 
+          sizes: productData.sizes || [], 
+          schoolId: productData.schoolId as GenericId<"schools">, 
+          createdAt: productData.createdAt || Date.now() 
+        });
+      } else if (selectedProduct) {
+        await updateProduct({ productId: selectedProduct._id, ...productData });
+        if (user) {
+          await notify({ userId: user.id as GenericId<"users">, message: "Product updated successfully!", type: "success" });
+        }
+      }
+
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Failed to save product:", error);
+      if (user) {
+        await notify({ userId: user.id as GenericId<"users">, message: "Failed to save product. Please try again.", type: "error" });
+      }
+    }
   };
 
   const handleDeleteProduct = async (productId: GenericId<"products">) => {

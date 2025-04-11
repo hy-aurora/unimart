@@ -6,8 +6,8 @@ export const getAll = query({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    if (!identity || !identity.subject) {
+      throw new ConvexError("Unauthorized: Missing or invalid identity");
     }
 
     const user = await ctx.db
@@ -43,8 +43,8 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    if (!identity || !identity.subject) {
+      throw new ConvexError("Unauthorized: Missing or invalid identity");
     }
 
     const user = await ctx.db
@@ -75,8 +75,8 @@ export const markAsRead = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    if (!identity || !identity.subject) {
+      throw new ConvexError("Unauthorized: Missing or invalid identity");
     }
 
     const user = await ctx.db
@@ -98,8 +98,8 @@ export const markAllAsRead = mutation({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    if (!identity || !identity.subject) {
+      throw new ConvexError("Unauthorized: Missing or invalid identity");
     }
 
     const user = await ctx.db
@@ -131,8 +131,8 @@ export const remove = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    if (!identity || !identity.subject) {
+      throw new ConvexError("Unauthorized: Missing or invalid identity");
     }
 
     const user = await ctx.db

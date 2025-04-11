@@ -1,5 +1,6 @@
 import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { api } from "./_generated/api";
 
 // Mutation to add a new category
 export const addCategory = mutation({
@@ -15,6 +16,13 @@ export const addCategory = mutation({
     }
 
     const categoryId = await ctx.db.insert("categories", args);
+
+    // Create an admin notification
+    await ctx.runMutation(api.adminNotifications.create, {
+      message: `New category added: ${args.name}`,
+      type: "info",
+    });
+
     return categoryId;
   },
 });

@@ -20,6 +20,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import imageCompression from "browser-image-compression";
+import { useUser } from "@clerk/nextjs";
 
 interface School {
   _id: string;
@@ -33,6 +34,7 @@ interface School {
 }
 
 export default function SchoolList() {
+  const { user } = useUser();
   const {
     isOpen: isAddOpen,
     onOpen: onAddOpen,
@@ -56,6 +58,7 @@ export default function SchoolList() {
   const addSchool = useMutation(api.schools.add);
   const updateSchool = useMutation(api.schools.update);
   const deleteSchool = useMutation(api.schools.remove);
+  const notify = useMutation(api.notifications.add);
   const schools = useQuery(api.schools.getAll) as School[] | undefined;
 
   const [selectedLogo, setSelectedLogo] = React.useState<string | null>(null);
@@ -94,21 +97,36 @@ export default function SchoolList() {
       const formData = new FormData(e.currentTarget);
       const data = Object.fromEntries(formData);
 
-      await addSchool({
+      const schoolData = {
         name: data.name as string,
         slug: data.slug as string,
-        logoUrl: selectedLogo || "", // Use uploaded logo
-        bannerUrl: selectedBanner || "", // Use uploaded banner
-        description: data.description as string,
-        location: data.location as string,
+        logoUrl: selectedLogo || "/images/placeholder.webp",
+        bannerUrl: selectedBanner || "/images/placeholder.webp",
+        description: data.description as string || "",
+        location: data.location as string || "",
         createdAt: Date.now(),
-      });
+      };
 
+      await addSchool(schoolData);
+      if (user) {
+        await notify({
+          userId: user.id as Id<"users">,
+          message: "School added successfully!",
+          type: "success",
+        });
+      }
       setSelectedLogo(null);
       setSelectedBanner(null);
-      onAddOpenChange(); // Close the modal after successful addition
+      onAddOpenChange(); // Close the modal
     } catch (err) {
       setError("Failed to add school. Please try again.");
+      if (user) {
+        await notify({
+          userId: user.id as Id<"users">,
+          message: "Failed to add school. Please try again.",
+          type: "error",
+        });
+      }
     }
   };
 
@@ -121,22 +139,37 @@ export default function SchoolList() {
       const data = Object.fromEntries(formData);
 
       if (selectedSchool) {
-        await updateSchool({
+        const schoolData = {
           schoolId: selectedSchool._id as Id<"schools">,
           name: data.name as string,
           slug: data.slug as string,
-          logoUrl: selectedLogo || selectedSchool.logoUrl, // Use uploaded or existing logo
-          bannerUrl: selectedBanner || selectedSchool.bannerUrl, // Use uploaded or existing banner
-          description: data.description as string,
-          location: data.location as string,
-        });
+          logoUrl: selectedLogo || selectedSchool.logoUrl,
+          bannerUrl: selectedBanner || selectedSchool.bannerUrl,
+          description: data.description as string || undefined,
+          location: data.location as string || undefined,
+        };
 
+        await updateSchool(schoolData);
+        if (user) {
+          await notify({
+            userId: user.id as Id<"users">,
+            message: "School updated successfully!",
+            type: "success",
+          });
+        }
         setSelectedLogo(null);
         setSelectedBanner(null);
-        onEditOpenChange(); // Close the modal after successful update
+        onEditOpenChange(); // Close the modal
       }
     } catch (err) {
       setError("Failed to update school. Please try again.");
+      if (user) {
+        await notify({
+          userId: user.id as Id<"users">,
+          message: "Failed to update school. Please try again.",
+          type: "error",
+        });
+      }
     }
   };
 

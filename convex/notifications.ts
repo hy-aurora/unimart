@@ -20,7 +20,8 @@ export const add = mutation({
       throw new ConvexError("Unauthorized");
     }
 
-    const user = await ctx.db.get(args.userId);
+    const userId = args.userId; // userId is already validated by the schema
+    const user = await ctx.db.get(userId);
     if (!user) {
       throw new ConvexError("User not found");
     }

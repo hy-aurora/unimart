@@ -7,8 +7,8 @@ export const getDashboardStats = query({
   handler: async (ctx) => {
     // Verify that the user is an admin
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    if (!identity || !identity.subject) {
+      throw new ConvexError("Unauthorized: Missing or invalid identity");
     }
 
     const user = await ctx.db

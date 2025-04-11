@@ -1,5 +1,6 @@
 import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { api } from "./_generated/api";
 
 // Mutation to add a new school
 export const add = mutation({
@@ -19,6 +20,13 @@ export const add = mutation({
     }
 
     const schoolId = await ctx.db.insert("schools", args);
+
+    // Create an admin notification
+    await ctx.runMutation(api.adminNotifications.create, {
+      message: `New school added: ${args.name}`,
+      type: "info",
+    });
+
     return schoolId;
   },
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AdminLayout } from "@/components/admin-layout";
 import {
@@ -31,6 +31,7 @@ import {
   Percent,
   BadgeCheck,
   Tags,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,10 +43,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function AdminDashboardPage() {
   // Use the admin dashboard statistics query
   const stats = useQuery(api.admin.getDashboardStats);
+  const removeNotification = useMutation(api.adminNotifications.remove);
+
+  const handleMarkAsRead = async (notificationId: string) => {
+    try {
+      await removeNotification({ notificationId: notificationId as Id<"admin_notifications"> });
+    } catch (error) {
+      console.error("Failed to remove notification:", error);
+    }
+  };
 
   // Handle loading state
   const isLoading = stats === undefined;
@@ -306,6 +317,26 @@ export default function AdminDashboardPage() {
                   <Button variant="outline" className="w-full">
                     View All Low Stock Products
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Notifications */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Admin Notifications</CardTitle>
+                <CardDescription>
+                  Notifications for recent actions and updates
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <>
+                  {/* Replace this section with a fallback message or handle notifications differently */}
+                  <p className="text-sm text-gray-500">No notifications available.</p>
+                  </>
                 </div>
               </CardContent>
             </Card>
