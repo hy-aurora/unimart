@@ -9,12 +9,19 @@ import { api } from '@/convex/_generated/api';
 import { useParams } from 'next/navigation';
 import { Id } from '@/convex/_generated/dataModel';
 
+// Custom function to validate and convert the ID
+function isValidProductId(id: string): boolean {
+  // Add validation logic if needed (e.g., UUID format check)
+  return !!id;
+}
+
 export default function ProductPage() {
-  const params = useParams();
-  const id = params?.id && typeof params.id === 'string' ? params.id : null;
+  const params = useParams<{ id: string }>();
+  const id = params?.id && isValidProductId(params.id) ? params.id : null;
+
   const product = useQuery(
     api.products.getProductById,
-    id ? { productId: id as Id<"products"> } : "skip"
+    id ? { productId: id } : "skip"  // Remove the type casting
   );
 
   const [selectedImage, setSelectedImage] = React.useState(0);
@@ -22,7 +29,11 @@ export default function ProductPage() {
   const [selectedColor, setSelectedColor] = React.useState("");
 
   if (!product) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg text-gray-600">Loading product details...</p>
+      </div>
+    );
   }
 
   return (

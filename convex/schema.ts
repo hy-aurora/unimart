@@ -58,7 +58,8 @@ export default defineSchema({
   })
     .index("by_schoolId", ["schoolId"])
     .index("by_price", ["price"])
-    .index("by_createdAt", ["createdAt"]),
+    .index("by_createdAt", ["createdAt"])
+    .index("by_string_id", ["id"]),
 
   // Cart Table
   carts: defineTable({

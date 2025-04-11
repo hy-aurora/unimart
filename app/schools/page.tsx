@@ -121,7 +121,12 @@ export default function SchoolsPage() {
                   {school.location}
                 </p>
                 <p className="text-sm text-default-500">
-                  {school.productCount} Products Available
+                  <a
+                    href={`/schools/${school._id}`}
+                    className="text-primary hover:underline"
+                  >
+                    {school.productCount} Products Available
+                  </a>
                 </p>
               </div>
             </CardBody>

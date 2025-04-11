@@ -129,7 +129,11 @@ export default function CatalogPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <Card isPressable className="group">
+                <Card
+                  isPressable
+                  className="group"
+                  onClick={() => window.location.href = `/product/${product.id}`} // Navigate to Product page
+                >
                   <div className="aspect-square overflow-hidden">
                     <img
                       src={product.imageUrls[0]}

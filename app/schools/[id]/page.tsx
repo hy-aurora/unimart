@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button, Card, CardBody, Badge, Input } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
@@ -10,16 +10,17 @@ import { Id } from "@/convex/_generated/dataModel";
 
 export default function SchoolPage() {
   const params = useParams();
-  const schoolId = params?.id ? (params.id as string) : null; // Extract school ID from the URL
+  const router = useRouter();
+  const schoolId = params?.id && typeof params.id === "string" ? (params.id as Id<"schools">) : null; // Convert to Id<"schools">
   const [selectedCategory, setSelectedCategory] = React.useState("all");
   const [searchQuery, setSearchQuery] = React.useState("");
 
   // Fetch school details and products using the school ID
   const school = schoolId
-    ? useQuery(api.schools.getById, { schoolId: schoolId as unknown as Id<"schools"> })
+    ? useQuery(api.schools.getById, { schoolId })
     : null;
   const products = schoolId
-    ? useQuery(api.products.getBySchool, { schoolId: schoolId as unknown as Id<"schools"> }) || []
+    ? useQuery(api.products.getBySchool, { schoolId }) || []
     : [];
 
   // Extract unique categories from products
@@ -159,7 +160,12 @@ export default function SchoolPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <Card key={product.id} isHoverable isPressable>
+                <Card
+                  key={product.id}
+                  isHoverable
+                  isPressable
+                  onClick={() => router.push(`/product/${product.id}`)} // Navigate to Product page
+                >
                   <CardBody>
                     <img
                       src={product.imageUrls[0]}
