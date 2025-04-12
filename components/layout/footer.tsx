@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { Link, Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
